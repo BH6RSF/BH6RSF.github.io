@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="贪吃蛇游戏 —— RsfNotes" />
+  <title>游戏 · RsfNotes</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%230969da'/><stop offset='1' stop-color='%238250df'/></linearGradient></defs><rect width='100' height='100' rx='22' fill='url(%23g)'/><text x='50' y='70' font-size='54' text-anchor='middle' fill='white' font-family='monospace' font-weight='bold'>&lt;/&gt;</text></svg>" />
+  <link rel="stylesheet" href="css/style.css?v=20260816191711" />
+</head>
+<body data-game="snake">
+  <!-- 导航栏 -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a class="nav-brand" href="index.html"><span class="logo">&lt;/&gt;</span>RsfNotes</a>
+      <div class="nav-links">
+        <a href="index.html">首页</a>
+        <a href="about.html">关于我</a>
+        <a href="friends.html">友链</a>
+        <a href="games.html">游戏</a>
+        <button id="themeToggle" class="theme-toggle" title="切换主题">🌙</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 页头 -->
+  <header class="page-header container">
+    <h1 class="fade-up">🎮 游戏中心</h1>
+    <p class="subtitle fade-up">贪吃蛇由桌面版 C++ 源码移植 · 玩法完全一致</p>
+  </header>
+
+  <!-- 主内容 -->
+  <main class="container">
+    <!-- 游戏切换 -->
+    <div class="game-tabs fade-up">
+      <button class="game-tab active" data-game="snake">🐍 贪吃蛇</button>
+      <button class="game-tab" data-game="2048">🔢 2048</button>
+    </div>
+
+    <div class="game-layout">
+      <!-- ============ 贪吃蛇 ============ -->
+      <div class="game-panel fade-up" id="snakePanel">
+        <div class="game-hud">
+          <span class="hud-item">🏆 分数 <b id="score">0</b></span>
+          <span class="hud-item">👑 最高 <b id="best">0</b></span>
+          <span class="hud-item" id="gameStatus">准备开始</span>
+        </div>
+
+        <div class="canvas-wrap">
+          <canvas id="gameCanvas" width="540" height="360"></canvas>
+          <div class="game-overlay" id="overlay">
+            <div class="overlay-box">
+              <h2 id="overlayTitle">贪吃蛇</h2>
+              <p id="overlayMsg">按「开始」或直接按方向键</p>
+              <button id="startBtn" class="btn">▶ 开始游戏</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="game-buttons">
+          <button id="pauseBtn" class="btn ghost" disabled>⏸ 暂停</button>
+        </div>
+
+        <!-- 触屏方向键（手机用） -->
+        <div class="touch-pad" id="touchPad">
+          <button class="t-up" data-dir="up">▲</button>
+          <button class="t-left" data-dir="left">◀</button>
+          <button class="t-right" data-dir="right">▶</button>
+          <button class="t-down" data-dir="down">▼</button>
+        </div>
+
+        <p class="game-help">键盘：<b>W A S D</b> 或 <b>方向键</b> 移动 · <b>P</b> 暂停 · <b>X</b> 认输结束</p>
+      </div>
+
+      <!-- ============ 2048 ============ -->
+      <div class="game-panel fade-up" id="game2048Panel" hidden>
+        <div class="game-hud">
+          <span class="hud-item">🏆 分数 <b id="score2048">0</b></span>
+          <span class="hud-item">👑 最高 <b id="best2048">0</b></span>
+          <span class="hud-item" id="status2048">准备开始</span>
+        </div>
+
+        <div class="board-wrap">
+          <div class="board" id="board2048">
+            <div class="board-bg" id="board2048bg"></div>
+            <div class="board-tiles" id="board2048tiles"></div>
+          </div>
+          <div class="game-overlay" id="overlay2048">
+            <div class="overlay-box">
+              <h2 id="overlayTitle2048">2048</h2>
+              <p id="overlayMsg2048">按「新游戏」或方向键 / WASD 开始</p>
+              <button id="startBtn2048" class="btn">▶ 新游戏</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="game-buttons">
+          <button id="restartBtn2048" class="btn ghost" disabled>↻ 重新开始</button>
+        </div>
+
+        <p class="game-help">键盘：<b>W A S D</b> 或 <b>方向键</b> 移动 · 手机：在棋盘上<b>滑动</b></p>
+      </div>
+
+      <!-- 侧栏：源码 -->
+      <aside class="game-side">
+        <div class="widget fade-up">
+          <h3><span class="arrow">▸</span> 🐍 贪吃蛇源码</h3>
+          <p>网页版由我桌面的 C++ 贪吃蛇移植而来：30×20 地图、吃食物 +10 分、撞墙或撞自己结束、占满地图胜利。</p>
+          <p style="margin-top:10px;">
+            <a class="btn" href="games/snake.cpp" download="贪吃蛇.cpp">⬇ 下载 C++ 源码</a>
+          </p>
+          <details style="margin-top:12px;">
+            <summary style="cursor:pointer;color:var(--accent);font-size:0.9rem;">📖 查看源码（C++）</summary>
+            <pre class="src-pre" id="srcCode">加载中…</pre>
+          </details>
+        </div>
+        <div class="widget fade-up">
+          <h3><span class="arrow">▸</span> 💡 小提示</h3>
+          <p>🐍 贪吃蛇速度随得分加快；🔢 2048 合成到 2048 即达成目标，可继续挑战更高分。两个游戏的最高分都会记录在本浏览器。</p>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="footer">
+    <div class="footer-links">
+      <a href="index.html">首页</a>
+      <a href="about.html">关于我</a>
+      <a href="friends.html">友链</a>
+      <a href="games.html">游戏</a>
+    </div>
+    <p>© <span id="footerYear"></span> RsfNotes · 由纯静态 HTML/CSS/JS 构建</p>
+  </footer>
+
+  <button id="backTop" class="back-top" title="回到顶部">↑</button>
+
+  <script src="js/posts.js?v=20260816191711"></script>
+  <script src="js/app.js?v=20260816191711"></script>
+  <script src="js/games.js?v=2"></script>
+  <script src="js/game2048.js?v=2"></script>
+</body>
+</html>

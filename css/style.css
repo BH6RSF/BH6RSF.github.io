@@ -1375,3 +1375,308 @@ a.tag:hover {
   color: var(--accent);
   font-size: 0.95rem;
 }
+
+/* ============================================================
+   游戏页（贪吃蛇）
+   ============================================================ */
+.game-layout {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 24px;
+  padding-bottom: 60px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .game-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.game-panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: var(--shadow);
+}
+
+.game-hud {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 14px;
+  font-size: 0.95rem;
+  flex-wrap: wrap;
+}
+
+.hud-item {
+  color: var(--text-soft);
+}
+
+.hud-item b {
+  font-family: "JetBrains Mono", Consolas, monospace;
+  color: var(--accent);
+  font-size: 1.05rem;
+}
+
+.canvas-wrap {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  touch-action: none; /* 防止手机滑动时页面滚动 */
+}
+
+#gameCanvas {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.game-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+.overlay-box {
+  text-align: center;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px 34px;
+  box-shadow: var(--shadow-lg);
+  max-width: 90%;
+}
+
+.overlay-box h2 {
+  margin-bottom: 8px;
+  font-size: 1.3rem;
+}
+
+.overlay-box p {
+  color: var(--text-soft);
+  margin-bottom: 16px;
+  font-size: 0.92rem;
+}
+
+.game-buttons {
+  margin-top: 14px;
+  text-align: center;
+}
+
+.btn.ghost {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+.btn.ghost:hover {
+  background: var(--accent-soft);
+  opacity: 1;
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* 触屏方向键（仅在触屏设备显示） */
+.touch-pad {
+  display: none;
+  grid-template-columns: repeat(3, 68px);
+  gap: 8px;
+  justify-content: center;
+  margin-top: 14px;
+}
+
+.touch-pad button {
+  width: 68px;
+  height: 48px;
+  font-size: 1.15rem;
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.touch-pad button:active {
+  background: var(--accent-soft);
+}
+
+.touch-pad .t-up { grid-column: 2; grid-row: 1; }
+.touch-pad .t-left { grid-column: 1; grid-row: 2; }
+.touch-pad .t-right { grid-column: 3; grid-row: 2; }
+.touch-pad .t-down { grid-column: 2; grid-row: 3; }
+
+@media (pointer: coarse) {
+  .touch-pad {
+    display: grid;
+  }
+}
+
+.game-help {
+  margin-top: 14px;
+  font-size: 0.85rem;
+  color: var(--text-faint);
+  text-align: center;
+}
+
+.game-help b {
+  color: var(--text-soft);
+}
+
+/* 源码展示 */
+.src-pre {
+  max-height: 340px;
+  overflow: auto;
+  font-size: 0.76rem;
+  line-height: 1.55;
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-top: 10px;
+  color: var(--code-text);
+  white-space: pre;
+}
+
+.game-side .widget p {
+  font-size: 0.88rem;
+}
+
+/* ---------- 游戏中心 Tab ---------- */
+.game-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.game-tab {
+  padding: 8px 22px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text-soft);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.92rem;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.game-tab:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.game-tab.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* ---------- 2048 棋盘（动画版） ---------- */
+.board-wrap {
+  position: relative;
+}
+
+.board {
+  position: relative;
+  aspect-ratio: 1;
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  max-width: 420px;
+  margin: 0 auto;
+  touch-action: none; /* 防止手机滑动时页面滚动 */
+  overflow: hidden;
+}
+
+/* 背景格 */
+.cell {
+  position: absolute;
+  width: 25%;
+  height: 25%;
+  padding: 4px;
+  box-sizing: border-box;
+}
+
+.cell-inner {
+  width: 100%;
+  height: 100%;
+  background: var(--card);
+  border-radius: 8px;
+}
+
+/* 动态块层 */
+.board-tiles {
+  position: absolute;
+  inset: 0;
+}
+
+.tile {
+  position: absolute;
+  width: 25%;
+  height: 25%;
+  padding: 4px;
+  box-sizing: border-box;
+  transition: transform 110ms ease-in-out;
+  will-change: transform;
+  z-index: 1;
+}
+
+.tile-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.7rem;
+  user-select: none;
+  background: var(--card);
+  color: var(--text-faint);
+}
+
+/* 经典 2048 色板 */
+.tile-inner.tile-2    { background: #eee4da; color: #776e65; }
+.tile-inner.tile-4    { background: #ede0c8; color: #776e65; }
+.tile-inner.tile-8    { background: #f2b179; color: #f9f6f2; }
+.tile-inner.tile-16   { background: #f59563; color: #f9f6f2; }
+.tile-inner.tile-32   { background: #f67c5f; color: #f9f6f2; }
+.tile-inner.tile-64   { background: #f65e3b; color: #f9f6f2; }
+.tile-inner.tile-128  { background: #edcf72; color: #f9f6f2; font-size: 1.4rem; }
+.tile-inner.tile-256  { background: #edcc61; color: #f9f6f2; font-size: 1.4rem; }
+.tile-inner.tile-512  { background: #edc850; color: #f9f6f2; font-size: 1.4rem; }
+.tile-inner.tile-1024 { background: #edc53f; color: #f9f6f2; font-size: 1.15rem; }
+.tile-inner.tile-2048 { background: #edc22e; color: #f9f6f2; font-size: 1.15rem; }
+.tile-inner.tile-super{ background: #3c3a32; color: #f9f6f2; font-size: 1.15rem; }
+
+/* 合并弹出动画 */
+@keyframes tile-pop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+.tile-inner.pop {
+  animation: tile-pop 160ms ease;
+}
+
+/* 新块出现动画 */
+@keyframes tile-appear {
+  from { transform: scale(0); }
+  to   { transform: scale(1); }
+}
+.tile-inner.appear {
+  animation: tile-appear 160ms ease;
+}
