@@ -1602,6 +1602,11 @@ a.tag:hover {
 }
 
 /* 背景格 */
+.board-bg {
+  position: absolute;
+  inset: 0;
+}
+
 .cell {
   position: absolute;
   width: 25%;
@@ -1679,4 +1684,21 @@ a.tag:hover {
 }
 .tile-inner.appear {
   animation: tile-appear 160ms ease;
+}
+
+/* 小屏适配：缩小数字字号，防止溢出格子 */
+@media (max-width: 400px) {
+  .tile-inner {
+    font-size: 1.3rem;
+  }
+  .tile-inner.tile-128,
+  .tile-inner.tile-256,
+  .tile-inner.tile-512 {
+    font-size: 1.1rem;
+  }
+  .tile-inner.tile-1024,
+  .tile-inner.tile-2048,
+  .tile-inner.tile-super {
+    font-size: 0.9rem;
+  }
 }

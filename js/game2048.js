@@ -110,7 +110,8 @@
 
   function move(dir) {
     if (animating) return;
-    if (state === "idle") start();
+    /* idle 首次操作开局；win 时继续游戏（隐藏胜利遮罩） */
+    if (state === "idle" || state === "win") start();
     if (state !== "running" && state !== "win") return;
 
     const { moves, grid: nextGrid, gained, mergedCells } = computeMoves(grid, dir);
