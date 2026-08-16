@@ -1442,6 +1442,7 @@ a.tag:hover {
   background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
+  z-index: 10; /* 必须高于棋盘数字块（.tile z-index:1） */
 }
 
 .overlay-box {

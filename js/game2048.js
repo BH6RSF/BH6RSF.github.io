@@ -37,14 +37,10 @@
     score = 0;
     won = false;
     animating = false;
-    const a = randomCell();
-    if (a) grid[a.r][a.c] = 2;
-    const b = randomCell();
-    if (b) grid[b.r][b.c] = Math.random() < 0.9 ? 2 : 4;
     state = "idle";
     updateHud();
     setOverlay("2048", "按「新游戏」或方向键 / WASD 开始", "▶ 新游戏");
-    rebuild(grid, [], null);
+    rebuild(grid, [], null); /* 初始棋盘为空，点击开始才生成数字 */
   }
 
   /* 按方向提取行/列并合并，返回移动轨迹与新网格 */
@@ -186,6 +182,17 @@
   /* ---------- 控制 ---------- */
   function start() {
     if (state === "over") init();
+    if (state === "idle") {
+      /* 首次开局：生成两个初始块（都带出现动画） */
+      const a = randomCell();
+      if (a) grid[a.r][a.c] = 2;
+      const b = randomCell();
+      if (b) grid[b.r][b.c] = Math.random() < 0.9 ? 2 : 4;
+      rebuild(grid, [], null);
+      $("board2048tiles")
+        .querySelectorAll(".tile-inner")
+        .forEach((el) => el.classList.add("appear"));
+    }
     if (state === "win") {
       state = "running";
       hideOverlay();
@@ -199,10 +206,8 @@
   }
 
   function restart() {
-    init();
-    state = "running";
-    hideOverlay();
-    syncRestartBtn();
+    init();      /* 清空棋盘 */
+    start();     /* 生成初始块并开始 */
   }
 
   /* ---------- 输入 ---------- */
@@ -331,4 +336,9 @@
   /* ---------- 启动 ---------- */
   renderBg();
   init();
+
+  /* 测试钩子（生产环境不调用，仅供自动化测试） */
+  if (typeof window !== "undefined" && typeof window.__test2048 === "function") {
+    window.__test2048({ getGrid: () => grid, getState: () => state, start: start, move: move, init: init });
+  }
 })();
