@@ -160,7 +160,10 @@
     /* 超车计分 */
     const playerBottom = player.y + player.h;
     for (const o of obstacles) {
-      if (!o.passed && o.y > playerBottom) { o.passed = true; score += 10; updateHud(); }
+      if (!o.passed && o.y > playerBottom) {
+        o.passed = true; score += 10; updateHud();
+        addFloat(o.x + o.w / 2, o.y, "+10", "#FFD700");
+      }
     }
 
     /* 金币碰撞 */
@@ -171,9 +174,8 @@
       const cx1 = c.x - c.radius, cx2 = c.x + c.radius;
       const cy1 = c.y - c.radius, cy2 = c.y + c.radius;
       if (px1 < cx2 && px2 > cx1 && py1 < cy2 && py2 > cy1) {
-        score += COIN_SCORE;
-        coins.splice(i, 1);
-        updateHud();
+        score += COIN_SCORE; coins.splice(i, 1); updateHud();
+        addFloat(c.x, c.y, "+30", "#FFD700");
       }
     }
 
@@ -186,6 +188,7 @@
       const by1 = o.y, by2 = o.y + o.h;
       if (px1 < bx2 && px2 > bx1 && py1 < by2 && py2 > by1) {
         state = "over";
+        crashAlpha = 255;
         if (score > best) { best = score; localStorage.setItem("rsf_race_best", String(best)); }
         updateHud();
         setOverlay("💥 游戏结束!", "得分 " + score + "（最高 " + best + "）· R 重开", "↻ 再来一局");
@@ -194,10 +197,19 @@
       }
     }
 
+    coinAngle += dt * 0.003;
     roadOffset = (roadOffset + dt * 0.12) % 40;
   }
 
   /* ---------- 绘制 ---------- */
+  let crashAlpha = 0;       /* 撞击红色闪屏 */
+  let floatingTexts = [];   /* 浮动得分文字 */
+  let coinAngle = 0;        /* 金币旋转角度 */
+
+  function addFloat(x, y, text, color) {
+    floatingTexts.push({ x, y, text, color, life: 1, startY: y });
+  }
+
   function roundRect(x, y, w, h, r) {
     ctx.beginPath();
     ctx.moveTo(x + r, y);
@@ -208,62 +220,163 @@
     ctx.closePath();
   }
 
-  function drawCar(car) {
-    const { x, y, w, h, color } = car;
-    ctx.fillStyle = color;
-    roundRect(x, y, w, h, 6);
-    ctx.fill();
-    ctx.fillStyle = "#111";
-    roundRect(x + 7, y + 8, w - 14, 16, 3); ctx.fill();
-    roundRect(x + 7, y + 38, w - 14, 16, 3); ctx.fill();
-    ctx.fillRect(x - WHEEL, y + 8, 8, 16);
-    ctx.fillRect(x + w - WHEEL + 0, y + 8, 8, 16);
-    ctx.fillRect(x - WHEEL, y + 38, 8, 16);
-    ctx.fillRect(x + w - WHEEL + 0, y + 38, 8, 16);
+  /* 草地纹理（深浅交替绿色条纹） */
+  function drawGrass() {
+    for (let y = -8 + (roadOffset % 8); y < H; y += 8) {
+      ctx.fillStyle = ((y - roadOffset) / 8 | 0) % 2 === 0 ? "#2d8f2d" : "#267a26";
+      ctx.fillRect(0, y, ROAD_LEFT, 8);
+      ctx.fillRect(ROAD_RIGHT, y, W - ROAD_RIGHT, 8);
+    }
   }
 
+  /* 道路（沥青 + 边缘线 + 车道虚线） */
+  function drawRoad() {
+    /* 沥青底色 */
+    ctx.fillStyle = "#3a3a3a";
+    ctx.fillRect(ROAD_LEFT, 0, ROAD_RIGHT - ROAD_LEFT, H);
+    /* 边缘双线 */
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(ROAD_LEFT, 0, 3, H);
+    ctx.fillRect(ROAD_RIGHT - 3, 0, 3, H);
+    /* 两条车道分隔虚线 */
+    const laneW = (ROAD_RIGHT - ROAD_LEFT) / 3;
+    ctx.fillStyle = "rgba(255,255,255,0.7)";
+    for (let i = -40; i < H + 40; i += 40) {
+      const yy = i + (roadOffset % 40);
+      ctx.fillRect(ROAD_LEFT + laneW - 3, yy, 6, 20);
+      ctx.fillRect(ROAD_LEFT + laneW * 2 - 3, yy, 6, 20);
+    }
+    /* 路面噪点质感 */
+    ctx.fillStyle = "rgba(0,0,0,0.08)";
+    for (let i = 0; i < 80; i++) {
+      const nx = ROAD_LEFT + Math.random() * (ROAD_RIGHT - ROAD_LEFT);
+      const ny = Math.random() * H;
+      ctx.fillRect(nx, ny, 2 + Math.random() * 3, 1);
+    }
+  }
+
+  /* 车辆（阴影 + 车灯） */
+  function drawCar(car, isPlayer) {
+    const { x, y, w, h, color } = car;
+    /* 阴影 */
+    ctx.fillStyle = "rgba(0,0,0,0.22)";
+    roundRect(x + 5, y + 5, w, h, 7);
+    ctx.fill();
+    /* 车身 */
+    ctx.fillStyle = color;
+    roundRect(x, y, w, h, 7);
+    ctx.fill();
+    /* 车身高光 */
+    ctx.fillStyle = "rgba(255,255,255,0.15)";
+    roundRect(x + 3, y + 3, w - 6, h * 0.35, 4);
+    ctx.fill();
+    /* 车窗 */
+    ctx.fillStyle = "rgba(10,15,30,0.85)";
+    roundRect(x + 6, y + 8, w - 12, 14, 3);
+    ctx.fill();
+    roundRect(x + 6, y + h - 22, w - 12, 14, 3);
+    ctx.fill();
+    /* 车轮 */
+    ctx.fillStyle = "#111";
+    ctx.fillRect(x - WHEEL + 1, y + 8, 7, 14);
+    ctx.fillRect(x + w - 2, y + 8, 7, 14);
+    ctx.fillRect(x - WHEEL + 1, y + h - 22, 7, 14);
+    ctx.fillRect(x + w - 2, y + h - 22, 7, 14);
+    /* 车灯 */
+    if (isPlayer) {
+      /* 玩家前灯（亮黄） */
+      ctx.fillStyle = "#fffde0";
+      ctx.fillRect(x + 3, y - 3, 10, 4);
+      ctx.fillRect(x + w - 13, y - 3, 10, 4);
+    } else {
+      /* 障碍车尾灯（红色） */
+      ctx.fillStyle = "#ff4444";
+      ctx.fillRect(x + 3, y + h - 2, 10, 4);
+      ctx.fillRect(x + w - 13, y + h - 2, 10, 4);
+    }
+  }
+
+  /* 金币（发光 + 旋转 + 光晕） */
   function drawCoin(c) {
-    /* 衰减闪烁 */
     const flash = c.life < 1500 && Math.floor(c.life / 150) % 2 === 0;
     if (flash) return;
-    /* 金色圆形 */
+    /* 外圈光晕 */
+    const glow = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, c.radius * 2.5);
+    glow.addColorStop(0, "rgba(255,215,0,0.25)");
+    glow.addColorStop(1, "rgba(255,215,0,0)");
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(c.x, c.y, c.radius * 2.5, 0, Math.PI * 2);
+    ctx.fill();
+    /* 金币主体（轻微椭圆模拟旋转） */
+    const rx = c.radius * (0.8 + 0.2 * Math.abs(Math.cos(coinAngle)));
     ctx.fillStyle = "#FFD700";
     ctx.beginPath();
-    ctx.arc(c.x, c.y, c.radius, 0, Math.PI * 2);
+    ctx.ellipse(c.x, c.y, rx, c.radius, 0, 0, Math.PI * 2);
     ctx.fill();
-    /* 内圆 + $ 符号 */
     ctx.fillStyle = "#B8860B";
     ctx.beginPath();
-    ctx.arc(c.x, c.y, c.radius - 3, 0, Math.PI * 2);
+    ctx.ellipse(c.x, c.y, rx - 3, c.radius - 3, 0, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = "#FFD700";
-    ctx.font = "bold 14px Arial";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText("$", c.x, c.y + 1);
+    if (rx > c.radius * 0.5) {
+      ctx.fillStyle = "#FFD700";
+      ctx.font = "bold 13px Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("$", c.x, c.y + 1);
+    }
   }
 
-  function draw() {
-    ctx.fillStyle = "#008000";
-    ctx.fillRect(0, 0, W, H);
-    ctx.fillStyle = "#404040";
-    ctx.fillRect(ROAD_LEFT, 0, ROAD_RIGHT - ROAD_LEFT, H);
-    ctx.fillStyle = "#fff";
-    ctx.fillRect(ROAD_LEFT, 0, 4, H);
-    ctx.fillRect(ROAD_RIGHT - 4, 0, 4, H);
-    ctx.fillRect(W / 2 - 4, 0, 8, H); /* 中线 */
-    /* 虚线 */
-    ctx.fillStyle = "#fff";
-    for (let i = -40; i < H + 40; i += 40) {
-      ctx.fillRect(ROAD_LEFT + (ROAD_RIGHT - ROAD_LEFT) / 3 - 4, i + roadOffset, 8, 20);
-      ctx.fillRect(ROAD_LEFT + ((ROAD_RIGHT - ROAD_LEFT) * 2) / 3 - 4, i + roadOffset, 8, 20);
+  /* 浮动得分文字 */
+  function drawFloats(dt) {
+    for (let i = floatingTexts.length - 1; i >= 0; i--) {
+      const f = floatingTexts[i];
+      f.life -= dt * 0.0012;
+      f.y -= 40 * dt * 0.001;
+      if (f.life <= 0) { floatingTexts.splice(i, 1); continue; }
+      ctx.globalAlpha = Math.max(0, f.life);
+      ctx.fillStyle = f.color;
+      ctx.font = "bold 16px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(f.text, f.x, f.y);
+      ctx.globalAlpha = 1;
     }
-    /* 金币 */
+  }
+
+  /* 撞击闪屏 */
+  function drawCrash() {
+    if (crashAlpha > 0) {
+      ctx.fillStyle = `rgba(255,40,40,${crashAlpha / 255 * 0.4})`;
+      ctx.fillRect(0, 0, W, H);
+      crashAlpha -= 12;
+      if (crashAlpha < 0) crashAlpha = 0;
+    }
+  }
+
+  /* HUD 底板 */
+  function drawHudBg() {
+    ctx.fillStyle = "rgba(0,0,0,0.45)";
+    roundRect(8, 8, 200, 32, 8);
+    ctx.fill();
+    ctx.font = "bold 18px sans-serif";
+    ctx.fillStyle = "#FFD700";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillText("⭐ " + score, 20, 24);
+    ctx.fillStyle = "#aaa";
+    ctx.fillText("最高 " + best, 120, 24);
+  }
+
+  /* 主绘制 */
+  function draw() {
+    drawGrass();
+    drawRoad();
     for (const c of coins) drawCoin(c);
-    /* 障碍 */
-    for (const o of obstacles) drawCar(o);
-    /* 玩家 */
-    drawCar(player);
+    for (const o of obstacles) drawCar(o, false);
+    drawCar(player, true);
+    drawHudBg();
+    drawFloats(16);
+    drawCrash();
   }
 
   /* ---------- 输入 ---------- */

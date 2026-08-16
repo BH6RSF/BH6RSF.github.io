@@ -253,34 +253,75 @@
     ctx.closePath();
   }
 
+  let tickCount = 0;
+
   function draw() {
     const c = themeColors();
+    tickCount++;
     /* 背景 */
     ctx.fillStyle = c.bg;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    /* 网格 */
+    /* 网格（细线） */
     ctx.strokeStyle = c.grid;
-    ctx.lineWidth = 1;
+    ctx.lineWidth = 0.5;
     for (let i = 1; i < W; i++) {
       ctx.beginPath(); ctx.moveTo(i * CELL, 0); ctx.lineTo(i * CELL, canvas.height); ctx.stroke();
     }
     for (let j = 1; j < H; j++) {
       ctx.beginPath(); ctx.moveTo(0, j * CELL); ctx.lineTo(canvas.width, j * CELL); ctx.stroke();
     }
-    /* 食物 */
+    /* 食物（脉动 + 光晕） */
     if (food) {
+      const fx = food.x * CELL + CELL / 2;
+      const fy = food.y * CELL + CELL / 2;
+      const pulse = 0.3 + 0.08 * Math.sin(tickCount * 0.15);
+      /* 外圈光晕 */
+      const glow = ctx.createRadialGradient(fx, fy, 0, fx, fy, CELL * 0.8);
+      glow.addColorStop(0, "rgba(255,95,87,0.2)");
+      glow.addColorStop(1, "rgba(255,95,87,0)");
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(fx, fy, CELL * 0.8, 0, Math.PI * 2);
+      ctx.fill();
+      /* 食物本体 */
       ctx.fillStyle = c.food;
       ctx.beginPath();
-      ctx.arc(food.x * CELL + CELL / 2, food.y * CELL + CELL / 2, CELL * 0.35, 0, Math.PI * 2);
+      ctx.arc(fx, fy, CELL * pulse, 0, Math.PI * 2);
       ctx.fill();
     }
-    /* 蛇 */
+    /* 蛇（渐变色 + 圆角） */
+    const len = snake.length;
     snake.forEach((s, i) => {
-      ctx.fillStyle = i === 0 ? c.head : c.snake;
-      const pad = 1.5;
-      roundRect(s.x * CELL + pad, s.y * CELL + pad, CELL - pad * 2, CELL - pad * 2, 4);
+      const t = len > 1 ? i / (len - 1) : 0;
+      /* 从头到尾颜色从 accent 渐变到 snake 暗色 */
+      const headC = c.snake;
+      const r = parseInt(headC.slice(1, 3), 16);
+      const g = parseInt(headC.slice(3, 5), 16);
+      const b = parseInt(headC.slice(5, 7), 16);
+      const ratio = 1 - t * 0.45;
+      ctx.fillStyle = i === 0 ? c.head :
+        `rgb(${Math.round(r * ratio)},${Math.round(g * ratio)},${Math.round(b * ratio)})`;
+      const pad = i === 0 ? 0.5 : 1.5;
+      const rad = i === 0 ? 5 : 4;
+      roundRect(s.x * CELL + pad, s.y * CELL + pad, CELL - pad * 2, CELL - pad * 2, rad);
       ctx.fill();
     });
+    /* 蛇头眼睛 */
+    if (snake.length > 0) {
+      const head = snake[0];
+      const hx = head.x * CELL + CELL / 2;
+      const hy = head.y * CELL + CELL / 2;
+      ctx.fillStyle = c.bg;
+      const eOff = CELL * 0.2;
+      const eR = CELL * 0.09;
+      if (dir === UP || dir === DOWN) {
+        ctx.beginPath(); ctx.arc(hx - eOff, hy - eOff * 0.5, eR, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(hx + eOff, hy - eOff * 0.5, eR, 0, Math.PI * 2); ctx.fill();
+      } else {
+        ctx.beginPath(); ctx.arc(hx - eOff * 0.5, hy - eOff, eR, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(hx - eOff * 0.5, hy + eOff, eR, 0, Math.PI * 2); ctx.fill();
+      }
+    }
   }
 
   /* --- 主题切换时重绘 --- */
