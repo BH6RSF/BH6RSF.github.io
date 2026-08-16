@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="RsfNotes 文章详情" />
+  <title>文章 · RsfNotes</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%230969da'/><stop offset='1' stop-color='%238250df'/></linearGradient></defs><rect width='100' height='100' rx='22' fill='url(%23g)'/><text x='50' y='70' font-size='54' text-anchor='middle' fill='white' font-family='monospace' font-weight='bold'>&lt;/&gt;</text></svg>" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <!-- 阅读进度条 -->
+  <div id="readingProgress" class="reading-progress"></div>
+
+  <!-- 导航栏 -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a class="nav-brand" href="index.html"><span class="logo">&lt;/&gt;</span>RsfNotes</a>
+      <div class="nav-links">
+        <a href="index.html">首页</a>
+        <a href="about.html">关于我</a>
+        <a href="friends.html">友链</a>
+        <button id="themeToggle" class="theme-toggle" title="切换主题">🌙</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 文章头部 -->
+  <header class="post-header container">
+    <div class="breadcrumb"><a href="index.html">← 返回首页</a></div>
+    <h1 id="postTitle">加载中…</h1>
+    <div class="post-meta">
+      <span>📅 <span id="postDate"></span></span>
+      <span class="sep">·</span>
+      <span>✍️ <span id="postAuthor"></span></span>
+      <span class="sep">·</span>
+      <span id="postReadTime" class="read-time"></span>
+    </div>
+    <div id="postTags" class="tag-row"></div>
+  </header>
+
+  <!-- 文章正文 -->
+  <main class="container">
+    <article id="postContent" class="post-body"></article>
+
+    <!-- 上一篇 / 下一篇 -->
+    <div id="postNav" class="post-nav"></div>
+
+
+  <!-- 页脚 -->
+  <footer class="footer">
+    <div class="footer-links">
+      <a href="index.html">首页</a>
+      <a href="about.html">关于我</a>
+      <a href="friends.html">友链</a>
+    </div>
+    <p>© <span id="footerYear"></span> RsfNotes · 由纯静态 HTML/CSS/JS 构建</p>
+  </footer>
+
+  <button id="backTop" class="back-top" title="回到顶部">↑</button>
+
+  <script src="js/posts.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
