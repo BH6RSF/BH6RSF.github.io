@@ -296,6 +296,7 @@
     .catch(() => { $("srcCode").textContent = "（源码加载失败，请点击上方「下载 C++ 源码」查看）"; });
 
   /* --- 游戏中心 tab 切换 --- */
+  const PANEL_IDS = { snake: "snakePanel", 2048: "game2048Panel", race: "racePanel" };
   document.querySelectorAll(".game-tab").forEach((tab) => {
     tab.addEventListener("click", () => {
       const g = tab.dataset.game;
@@ -303,8 +304,10 @@
       document.querySelectorAll(".game-tab").forEach((x) =>
         x.classList.toggle("active", x === tab)
       );
-      document.getElementById("snakePanel").hidden = g !== "snake";
-      document.getElementById("game2048Panel").hidden = g !== "2048";
+      Object.entries(PANEL_IDS).forEach(([key, id]) => {
+        const p = document.getElementById(id);
+        if (p) p.hidden = key !== g;
+      });
       if (g !== "snake") pause(); /* 切走时暂停贪吃蛇 */
     });
   });

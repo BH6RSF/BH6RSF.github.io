@@ -1427,6 +1427,18 @@ a.tag:hover {
   touch-action: none; /* 防止手机滑动时页面滚动 */
 }
 
+/* 赛车画布：逻辑 400×600，显示按比例缩小居中 */
+.race-wrap {
+  width: min(340px, 100%);
+  margin: 0 auto;
+}
+
+.race-wrap #raceCanvas {
+  display: block; /* 消除 inline 基线空隙，避免底部被裁/多出空隙 */
+  width: 100%;
+  height: auto;
+}
+
 #gameCanvas {
   display: block;
   width: 100%;
@@ -1439,9 +1451,7 @@ a.tag:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
+  background: rgba(0, 0, 0, 0.4);
   z-index: 10; /* 必须高于棋盘数字块（.tile z-index:1） */
 }
 
