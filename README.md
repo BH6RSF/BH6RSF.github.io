@@ -46,6 +46,12 @@ npx serve .
 
 ### 发布新文章
 
+**方式一：一键工具（推荐，无需懂代码）**
+
+双击 `add-post.bat`，按提示依次输入：标题 → ID → 日期 → 标签 → 摘要 → 粘贴 Markdown 正文（输入 `END` 结束）。脚本会自动写入 `js/posts.js` 并校验代码合法性。
+
+**方式二：手动编辑**
+
 打开 `js/posts.js`，在 `POSTS` 数组**开头**添加一个对象：
 
 ```js
@@ -94,6 +100,8 @@ npx serve .
 | 头像 / 技术栈 / 经历 | `about.html` | 直接编辑 HTML |
 | 友链列表 | `friends.html` | 复制 `<a class="friend-card">` 结构新增 |
 | giscus 评论 | `js/app.js` 顶部 `GISCUS` | 见下方说明 |
+
+> 站点浏览统计（总访问 / 访客 / 文章阅读量）由**不蒜子**自动统计，无需配置。本地预览（localhost）不加载统计，避免显示共享计数。
 
 ### 启用评论（giscus）
 

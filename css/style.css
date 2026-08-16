@@ -1352,3 +1352,26 @@ a.tag:hover {
 .read-time {
   color: var(--text-faint);
 }
+
+/* ---------- 站点统计 ---------- */
+.stats-list {
+  list-style: none;
+}
+
+.stats-list li {
+  padding: 5px 0;
+  font-size: 0.88rem;
+  color: var(--text-soft);
+  border-bottom: 1px dashed var(--border);
+}
+
+.stats-list li:last-child {
+  border-bottom: none;
+}
+
+.stat-num {
+  font-family: "JetBrains Mono", Consolas, monospace;
+  font-weight: 700;
+  color: var(--accent);
+  font-size: 0.95rem;
+}
