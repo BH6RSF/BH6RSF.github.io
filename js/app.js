@@ -7,15 +7,18 @@
 /* ---------- giscus 评论配置 ----------
    启用步骤：
    1. 在 GitHub 仓库设置中开启 Discussions
-   2. 安装 giscus app：https://github.com/apps/giscus
-   3. 在 https://giscus.app 生成配置，填入下面四个字段
-   4. repo 留空时，文章页会显示配置提示而不是评论框
+      （https://github.com/BH6RSF/BH6RSF.github.io/settings → Features）
+   2. 安装 giscus app：https://github.com/apps/giscus（授权给本仓库）
+   3. 打开 https://giscus.app/zh-CN → 输入仓库名 → 选分类
+      → 页面会给出 repo / repoId / category / categoryId 四个值
+   4. 把 repoId 和 categoryId 填入下面（repo 和 category 已预填）
+   5. 重新部署后，文章页底部即可评论
 */
 const GISCUS = {
-  repo: "", // 例如 "yourname/yourname.github.io"
-  repoId: "",
-  category: "Announcements",
-  categoryId: "",
+  repo: "BH6RSF/BH6RSF.github.io",
+  repoId: "R_kgDOT53FaA",
+  category: "General",
+  categoryId: "DIC_kwDOT53FaM4DDf3A",
 };
 
 /* ============================================================
@@ -246,6 +249,23 @@ function formatDate(d) {
 /* ============================================================
    主题切换
    ============================================================ */
+/* 评论框主题：跟随博客主题（暗色 → giscus dark，亮色 → light） */
+function giscusTheme() {
+  return document.documentElement.getAttribute("data-theme") === "dark"
+    ? "dark" : "light";
+}
+
+/* 博客主题切换后，同步评论框（giscus iframe）主题 */
+function syncGiscusTheme() {
+  const frame = document.querySelector("iframe.giscus-frame");
+  if (frame && frame.contentWindow) {
+    frame.contentWindow.postMessage(
+      { giscus: { setConfig: { theme: giscusTheme() } } },
+      "https://giscus.app"
+    );
+  }
+}
+
 function initTheme() {
   const saved = localStorage.getItem("theme");
   const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -264,6 +284,7 @@ function initTheme() {
       localStorage.setItem("theme", next);
       btn.textContent = next === "dark" ? "☀️" : "🌙";
       btn.title = next === "dark" ? "切换到亮色模式" : "切换到暗色模式";
+      syncGiscusTheme(); /* 同步评论框主题 */
     });
   }
 }
@@ -563,13 +584,14 @@ function initComments(post) {
   const box = document.getElementById("giscusBox");
   if (!box) return;
 
-  if (!GISCUS.repo) {
+  if (!GISCUS.repo || !GISCUS.repoId || !GISCUS.categoryId) {
     box.innerHTML = `
       <div class="giscus-placeholder">
         💬 评论功能待启用<br><br>
-        在 <code>js/app.js</code> 顶部的 <code>GISCUS</code> 常量中填入
-        <code>repo / repoId / category / categoryId</code> 后即可开启
-        <a href="https://giscus.app" target="_blank" rel="noopener noreferrer">（giscus.app 生成配置）</a>
+        打开 <a href="https://giscus.app/zh-CN" target="_blank" rel="noopener noreferrer">giscus.app</a>，
+        输入仓库 <code>BH6RSF/BH6RSF.github.io</code> 生成配置，<br>
+        然后把 <code>repoId</code> 和 <code>categoryId</code> 填入
+        <code>js/app.js</code> 顶部的 <code>GISCUS</code> 常量即可开启
       </div>`;
     return;
   }
@@ -588,7 +610,7 @@ function initComments(post) {
   script.setAttribute("data-reactions-enabled", "1");
   script.setAttribute("data-emit-metadata", "0");
   script.setAttribute("data-input-position", "top");
-  script.setAttribute("data-theme", "preferred_color_scheme");
+  script.setAttribute("data-theme", giscusTheme());
   script.setAttribute("data-lang", "zh-CN");
   box.appendChild(script);
 }
