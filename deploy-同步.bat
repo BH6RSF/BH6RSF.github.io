@@ -6,10 +6,16 @@ echo   RsfNotes - Deploy to GitHub Pages
 echo ==========================================
 echo.
 
+echo [1/3] Updating cache version tags...
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0version-bump.ps1"
+if errorlevel 1 goto :fail_version
+
+echo [2/3] Committing changes...
 git add -A
 
 git commit -m "update: %date% %time%"
 
+echo [3/3] Pushing to GitHub...
 git push origin main
 if errorlevel 1 goto :fail_push
 
@@ -21,6 +27,13 @@ echo       https://BH6RSF.github.io/
 echo ==========================================
 pause
 exit /b 0
+
+:fail_version
+echo.
+echo [FAIL] Cache version update failed.
+echo        Check version-bump.ps1.
+pause
+exit /b 1
 
 :fail_push
 echo.
