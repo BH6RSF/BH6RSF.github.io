@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://bh6rsf.github.io/sitemap.xml
