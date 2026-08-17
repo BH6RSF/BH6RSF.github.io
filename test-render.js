@@ -94,6 +94,14 @@ check("代码块语言标注", html.includes("code-lang") && html.includes("js")
 check("引用 -> <blockquote>", html.includes("<blockquote>"));
 check("表格 -> <table><th>", html.includes("<table>") && html.includes("<th>列A</th>") && html.includes("<td>1</td>"));
 check("链接 -> <a href", html.includes('<a href="https://example.com"'));
+check("图片 -> <img src", (() => {
+  const imgHtml = renderInline("![测试图片](https://example.com/test.png)");
+  return imgHtml.includes('<img src="https://example.com/test.png"') && imgHtml.includes('alt="测试图片"');
+})());
+check("图片不影响链接", (() => {
+  const mixed = renderInline("![img](https://a.com/1.png) 和 [链接](https://b.com)");
+  return mixed.includes("<img") && mixed.includes('<a href="https://b.com"');
+})());
 
 /* 2.5 语法高亮 */
 console.log("\n[2.5] 语法高亮");

@@ -1,6 +1,6 @@
 /* ============================================================
    RsfNotes · 赛车（由 pygame 版移植）
-   400×600 · 三条车道 · 上下左右移动
+   400×600 · 三条车道 · 左右移动
    躲避障碍车 · 超车 +10 分 · 金币 +30 分 · 碰撞结束
    难度递增：生成间隔缩短 + 障碍速度提升（每 100 分）
    ============================================================ */
@@ -18,7 +18,6 @@
   const OBST_COLORS = ["#ffff00", "#0000ff", "#ffa500", "#a020f0"];
   const COIN_RADIUS = 14;
   const COIN_SCORE = 30;
-  const COIN_LIFETIME = 5000;
   const MAX_OBSTACLES = 4;       /* 同屏上限继续收紧 */
   const BLOCK_RANGE = 520;       /* 车道检测范围覆盖大半个屏幕 */
   const BASE_INTERVAL = 1400;    /* 起始生成间隔更稀 */
@@ -29,7 +28,7 @@
   let player, obstacles, coins, score, best, state;
   let spawnTimer, spawnInterval, baseSpeed, roadOffset;
   let coinTimer, coinInterval;
-  let holding = { up: false, down: false, left: false, right: false };
+  let holding = { left: false, right: false };
   let lastTs = 0;
 
   const $ = (id) => document.getElementById(id);
@@ -74,10 +73,22 @@
     return null;
   }
 
-  /* 金币（随机车道位置，随道路向下滚动） */
+  /* 金币（随机车道位置，随道路向下滚动，避开障碍车） */
   function makeCoin() {
-    const laneX = LANE_CENTERS[rnd(0, 2)];
-    return { x: laneX, y: -COIN_RADIUS * 2, radius: COIN_RADIUS, life: COIN_LIFETIME, speed: baseSpeed * 0.6 };
+    const y = -COIN_RADIUS * 2;
+    // 打乱车道顺序，优先选没有障碍车的车道
+    const lanes = [0, 1, 2].sort(() => Math.random() - 0.5);
+    for (const i of lanes) {
+      const cx = LANE_CENTERS[i];
+      const blocked = obstacles.some(
+        (o) => Math.abs(o.x + o.w / 2 - cx) < CAR_W && o.y < y + 200 && o.y + o.h > y - 100
+      );
+      if (!blocked) {
+        return { x: cx, y: y, radius: COIN_RADIUS, speed: baseSpeed + rnd(-20, 20) };
+      }
+    }
+    // 三条车道都有障碍，跳过本次金币生成
+    return null;
   }
 
   /* ---------- 初始化 ---------- */
@@ -95,7 +106,7 @@
     holding = { up: false, down: false, left: false, right: false };
     state = "idle";
     updateHud();
-    setOverlay("🏎️ 赛车", "躲避障碍车，超车 +10 分，收集金币 +30 分", "▶ 开始游戏");
+    setOverlay("🏎️ 赛车", "左右移动躲避障碍车，超车 +10 分，收集金币 +30 分", "▶ 开始游戏");
     syncRestartBtn();
     draw();
   }
@@ -120,14 +131,6 @@
       player.x += step;
       if (player.x + player.w + WHEEL > ROAD_RIGHT) player.x = ROAD_RIGHT - player.w - WHEEL;
     }
-    if (holding.up) {
-      player.y -= step;
-      if (player.y < 0) player.y = 0;
-    }
-    if (holding.down) {
-      player.y += step;
-      if (player.y > H - player.h) player.y = H - player.h;
-    }
 
     /* 障碍生成 */
     spawnTimer += dt;
@@ -139,10 +142,11 @@
       if (score % 100 === 0 && score > 0) baseSpeed = Math.min(baseSpeed + 35, 300);
     }
 
-    /* 金币生成 */
+    /* 金币生成（车道全被障碍占满时跳过，下次再试） */
     coinTimer -= dt;
     if (coinTimer <= 0 && coins.length < 2) {
-      coins.push(makeCoin());
+      const coin = makeCoin();
+      if (coin) coins.push(coin);
       coinTimer = coinInterval;
       coinInterval = rnd(4000, 7000);
     }
@@ -150,11 +154,10 @@
     /* 障碍移动 */
     for (const o of obstacles) o.y += o.speed * dt / 1000;
 
-    /* 金币移动 + 衰减 */
+    /* 金币移动 */
     for (let i = coins.length - 1; i >= 0; i--) {
       coins[i].y += coins[i].speed * dt / 1000;
-      coins[i].life -= dt;
-      if (coins[i].life <= 0 || coins[i].y > H + 20) coins.splice(i, 1);
+      if (coins[i].y > H + 20) coins.splice(i, 1);
     }
 
     /* 超车计分 */
@@ -298,8 +301,6 @@
 
   /* 金币（发光 + 旋转 + 光晕） */
   function drawCoin(c) {
-    const flash = c.life < 1500 && Math.floor(c.life / 150) % 2 === 0;
-    if (flash) return;
     /* 外圈光晕 */
     const glow = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, c.radius * 2.5);
     glow.addColorStop(0, "rgba(255,215,0,0.25)");
@@ -381,8 +382,8 @@
 
   /* ---------- 输入 ---------- */
   const KEY_DIRS = {
-    arrowleft: "left", arrowright: "right", arrowup: "up", arrowdown: "down",
-    a: "left", d: "right", w: "up", s: "down",
+    arrowleft: "left", arrowright: "right",
+    a: "left", d: "right",
   };
   window.addEventListener("keydown", (e) => {
     if (document.body.dataset.game !== "race") return;

@@ -510,6 +510,19 @@ a.tag:hover {
   margin: 24px 0;
 }
 
+/* 文章内图片 */
+.post-body img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+  margin: 16px 0;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  display: block;
+}
+[data-theme="dark"] .post-body img {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
 /* 代码 */
 .post-body pre {
   background: var(--code-bg);

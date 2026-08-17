@@ -44,6 +44,11 @@ function renderInline(s) {
     codeSpans.push(`<code>${c}</code>`);
     return `\u0000${codeSpans.length - 1}\u0000`;
   });
+  // 图片（必须在链接之前匹配，避免 ![alt](url) 被链接规则吞掉）
+  s = s.replace(
+    /!\[([^\]]*)\]\((https?:\/\/[^)\s]+)\)/g,
+    '<img src="$2" alt="$1" style="max-width:100%;height:auto;border-radius:8px;margin:8px 0" loading="lazy" />'
+  );
   // 链接（仅允许 http/https/mailto）
   s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+|mailto:[^)\s]+)\)/g,
     '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
