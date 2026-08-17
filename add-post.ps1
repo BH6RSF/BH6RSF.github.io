@@ -1,4 +1,4 @@
-# RsfNotes - 添加新文章工具（支持 back 回退 + 最终确认 + 图片上传）
+﻿# RsfNotes - 添加新文章工具（支持 back 回退 + 最终确认 + 图片上传）
 # 双击 add-post.bat 运行；或手动执行：
 #   powershell -NoProfile -ExecutionPolicy Bypass -File add-post.ps1
 
@@ -178,11 +178,11 @@ function Upload-Image {
 
   $size = (Get-Item $FilePath).Length
   if ($size -gt 5MB) {
-    Write-Host "      ✗ 文件过大（$([math]::Round($size/1MB,1) MB)，上限 5 MB）" -ForegroundColor Red
+    Write-Host ("      ✗ 文件过大（" + [math]::Round($size/1MB,1) + " MB)，上限 5 MB") -ForegroundColor Red
     return $null
   }
 
-  Write-Host "      ⏳ 上传中（$([math]::Round($size/1KB,0) KB)）..." -ForegroundColor DarkGray -NoNewline
+  Write-Host ("      ⏳ 上传中（" + [math]::Round($size/1KB,0) + " KB）...") -ForegroundColor DarkGray -NoNewline
   $result = Upload-ToSmms -FilePath $FilePath
   if ($result.ok) {
     Write-Host "`r      ✓ $($result.msg)：$($result.url)  " -ForegroundColor Green
