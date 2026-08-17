@@ -271,7 +271,7 @@
         <div class="tp-row">
           <div class="tp-col"><input class="tp-input" id="uuidOut" readonly placeholder="点击生成"></div>
           <div class="tp-col" style="flex:0"><button class="tp-btn tp-btn-primary" onclick="genUuid()">生成</button></div>
-          <div class="tp-col" style="flex:0"><button class="tp-btn tp-btn-ghost" onclick="copyText('uuidOut')">复制</button></div>
+          <div class="tp-col" style="flex:0"><button class="tp-btn tp-btn-ghost" onclick="copyBtn('uuidOut')">复制</button></div>
         </div>
         <label style="font-size:0.8rem;margin-top:6px;display:block"><input type="checkbox" id="uuidUpper"> 大写 · <input type="checkbox" id="uuidNoDash"> 去掉横杠</label>
       </div>
@@ -280,7 +280,7 @@
         <div class="tp-row">
           <div class="tp-col"><input class="tp-input" id="pwdOut" readonly placeholder="点击生成"></div>
           <div class="tp-col" style="flex:0"><button class="tp-btn tp-btn-primary" onclick="genPwd()">生成</button></div>
-          <div class="tp-col" style="flex:0"><button class="tp-btn tp-btn-ghost" onclick="copyText('pwdOut')">复制</button></div>
+          <div class="tp-col" style="flex:0"><button class="tp-btn tp-btn-ghost" onclick="copyBtn('pwdOut')">复制</button></div>
         </div>
         <div style="margin-top:8px;font-size:0.85rem">
           长度：<input type="number" id="pwdLen" value="16" min="4" max="128" style="width:60px;padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg-soft);color:var(--text)">
@@ -538,7 +538,7 @@
     try { el.textContent = JSON.stringify(JSON.parse(document.getElementById('jsonIn').value)); }
     catch(e) { el.textContent = '❌ JSON 格式错误：' + e.message; }
   }
-  function jsonCopy() { navigator.clipboard.writeText(document.getElementById('jsonOut').textContent); }
+  function jsonCopy() { copyTextToClipboard(document.getElementById('jsonOut').textContent); }
   function jsonClear() { document.getElementById('jsonIn').value = ''; document.getElementById('jsonOut').textContent = '等待输入...'; }
 
   function b64Encode() {
@@ -557,14 +557,14 @@
       document.getElementById('b64Out').textContent = new TextDecoder().decode(bytes);
     } catch(e) { document.getElementById('b64Out').textContent = '❌ 解码失败（不是有效 Base64）'; }
   }
-  function b64Copy() { navigator.clipboard.writeText(document.getElementById('b64Out').textContent); }
+  function b64Copy() { copyTextToClipboard(document.getElementById('b64Out').textContent); }
 
   function urlEncode() { document.getElementById('urlOut').textContent = encodeURIComponent(document.getElementById('urlIn').value); }
   function urlDecode() {
     try { document.getElementById('urlOut').textContent = decodeURIComponent(document.getElementById('urlIn').value); }
     catch(e) { document.getElementById('urlOut').textContent = '❌ 解码失败：' + e.message; }
   }
-  function urlCopy() { navigator.clipboard.writeText(document.getElementById('urlOut').textContent); }
+  function urlCopy() { copyTextToClipboard(document.getElementById('urlOut').textContent); }
 
   function regexTest() {
     var out = document.getElementById('regexOut');
@@ -761,7 +761,7 @@
     };
     reader.readAsDataURL(input.files[0]);
   }
-  function copyB64Img() { navigator.clipboard.writeText(b64ImgData); }
+  function copyB64Img() { copyTextToClipboard(b64ImgData); }
   function base64ToImg() {
     var v = document.getElementById('b64ImgIn').value.trim();
     if (!v) return;
@@ -795,7 +795,7 @@
     }
     document.getElementById('caseOut').textContent = r;
   }
-  function caseCopy() { navigator.clipboard.writeText(document.getElementById('caseOut').textContent); }
+  function caseCopy() { copyTextToClipboard(document.getElementById('caseOut').textContent); }
 
   function doDiff() {
     var a = document.getElementById('diffA').value.split('\n');
@@ -1014,9 +1014,30 @@
     URL.revokeObjectURL(url);
   }
 
-  function copyText(id) {
+  /* 通用复制（兼容 file:// 和 HTTP 环境：clipboard API 可能不可用） */
+  function copyTextToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text).then(function(){ return true; }).catch(function(){ return legacyCopy(text); });
+    }
+    return Promise.resolve(legacyCopy(text));
+  }
+  function legacyCopy(text) {
+    try {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      var ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      return ok;
+    } catch(e) { return false; }
+  }
+  function copyBtn(id) {
     var el = document.getElementById(id);
-    if (el) navigator.clipboard.writeText(el.value || el.textContent);
+    if (!el) return;
+    copyTextToClipboard(el.value || el.textContent);
   }
 
   renderGrid('all');
