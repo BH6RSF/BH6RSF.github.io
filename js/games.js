@@ -337,7 +337,7 @@
     .catch(() => { $("srcCode").textContent = "（源码加载失败，请点击上方「下载 C++ 源码」查看）"; });
 
   /* --- 游戏中心 tab 切换 --- */
-  const PANEL_IDS = { snake: "snakePanel", 2048: "game2048Panel", race: "racePanel", ms: "msPanel" };
+  const PANEL_IDS = { snake: "snakePanel", 2048: "game2048Panel", race: "racePanel" };
   document.querySelectorAll(".game-tab").forEach((tab) => {
     tab.addEventListener("click", () => {
       const g = tab.dataset.game;

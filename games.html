@@ -36,7 +36,6 @@
       <button class="game-tab active" data-game="snake">🐍 贪吃蛇</button>
       <button class="game-tab" data-game="2048">🔢 2048</button>
       <button class="game-tab" data-game="race">🏎️ 赛车</button>
-      <button class="game-tab" data-game="ms">💣 扫雷</button>
     </div>
 
     <div class="game-layout">
@@ -137,33 +136,6 @@
         <p class="game-help">键盘：<b>A / D</b> 或 <b>← →</b> 左右移动（可按住）· <b>R</b> 重开 · 手机：按住方向键</p>
       </div>
 
-      <!-- ============ 扫雷 ============ -->
-      <div class="game-panel fade-up" id="msPanel" hidden>
-        <div class="ms-wrap">
-          <div class="ms-frame">
-            <!-- 顶部栏：雷数 / 笑脸 / 时间 -->
-            <div class="ms-top">
-              <div class="ms-led" id="msMineLed">010</div>
-              <button class="ms-face" id="msFace" title="重新开始">🙂</button>
-              <div class="ms-led" id="msTimeLed">000</div>
-            </div>
-            <!-- 难度按钮 -->
-            <div class="ms-levels">
-              <button class="ms-level-btn active" data-level="easy">初级 9×9</button>
-              <button class="ms-level-btn" data-level="medium">中级 16×16</button>
-              <button class="ms-level-btn" data-level="hard">高级 30×16</button>
-            </div>
-            <!-- 棋盘 -->
-            <div class="ms-board" id="msGrid"></div>
-          </div>
-          <p class="game-help" style="margin-top:10px">
-            左键<b>翻开</b> · 右键<b>插旗/问号</b> · 双击数字<b>快速翻开</b>周围 · 手机长按插旗<br>
-            点中地雷就输了，把非雷格子全部翻开即获胜！
-          </p>
-          <p class="game-help" style="color:var(--accent)">🏆 最快纪录：<span id="msBest">暂无</span></p>
-        </div>
-      </div>
-
       <!-- 侧栏：源码 -->
       <aside class="game-side">
         <div class="widget fade-up">
@@ -179,7 +151,7 @@
         </div>
         <div class="widget fade-up">
           <h3><span class="arrow">▸</span> 💡 小提示</h3>
-          <p>🐍 贪吃蛇速度随得分加快；🔢 2048 合成到 2048 即达成目标；🏎️ 赛车左右移动躲避障碍车、超车得分、金币加分、难度递增；💣 扫雷是经典 XP 玩法，三种难度。四个游戏的最高分/纪录都会记录在本浏览器。</p>
+          <p>🐍 贪吃蛇速度随得分加快；🔢 2048 合成到 2048 即达成目标；🏎️ 赛车左右移动躲避障碍车、超车得分、金币加分、难度递增。三个游戏的最高分都会记录在本浏览器。</p>
         </div>
       </aside>
     </div>
@@ -203,6 +175,5 @@
   <script src="js/games.js?v=20260822214400"></script>
   <script src="js/game2048.js?v=20260822214400"></script>
   <script src="js/game-race.js?v=20260822214400"></script>
-  <script src="js/minesweeper.js?v=20260817212938"></script>
 </body>
 </html>
