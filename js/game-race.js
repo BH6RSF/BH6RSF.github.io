@@ -30,7 +30,6 @@
   let coinTimer, coinInterval;
   let holding = { left: false, right: false };
   let lastTs = 0;
-
   const $ = (id) => document.getElementById(id);
   const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
 
@@ -97,6 +96,8 @@
     obstacles = [];
     coins = [];
     score = 0;
+    // 读取历史最高分（避免 undefined）
+    best = parseInt(localStorage.getItem("rsf_race_best") || "0", 10);
     spawnTimer = 0;
     spawnInterval = BASE_INTERVAL;
     baseSpeed = BASE_SPEED;
