@@ -75,6 +75,10 @@ function renderInline(s) {
     return stashMath(tex) ?? m;
   });
 
+  // 2.5) 公式之外的字面美元符号：\$ → 占位符（最后还原为 $）
+  //      放在公式提取之后，保证公式内部的 \$（LaTeX 字面美元）原样交给 KaTeX
+  s = s.replace(/\\\$/g, "\u0002");
+
   // 3) 转义 HTML，防止 XSS（占位符用的是控制字符，不受转义影响）
   s = escapeHtml(s);
 
@@ -93,7 +97,9 @@ function renderInline(s) {
   // 恢复行内代码
   s = s.replace(/\u0000(\d+)\u0000/g, (m, i) => codeSpans[+i]);
   // 恢复行内公式
-  return s.replace(/\u0001(\d+)\u0001/g, (m, i) => mathSpans[+i]);
+  s = s.replace(/\u0001(\d+)\u0001/g, (m, i) => mathSpans[+i]);
+  // 还原字面美元符号
+  return s.replace(/\u0002/g, "$");
 }
 
 /* ---------- 轻量代码语法高亮（GitHub Primer 风格配色） ---------- */

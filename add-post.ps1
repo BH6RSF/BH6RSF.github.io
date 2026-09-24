@@ -304,8 +304,14 @@ while ($true) {
 
 # ---------- 写入 ----------
 $content = $script:contentLines -join "`n"
-# 转义反引号和模板插值符（$ 后跟花括号），保证 JS 模板字符串合法
-$content = $content.Replace('$' + '{', '\$' + '{').Replace('`', '\`')
+# 转义：保证正文能安全嵌入 JS 模板字符串
+# 顺序很重要 —— 必须先转义反斜杠，否则后面为 ${ 和反引号补的反斜杠会被二次转义
+#   \        -> \\        （LaTeX 命令如 \frac、\\ 换行得以原样保留）
+#   ${       -> \${       （避免被当成模板插值）
+#   `        -> \`        （避免提前结束模板字符串）
+$content = $content.Replace('\', '\\')
+$content = $content.Replace('$' + '{', '\$' + '{')
+$content = $content.Replace('`', '\`')
 # 转义标题/摘要/标签中的双引号和反斜杠
 $esc = { param($s) $s.Replace('\', '\\').Replace('"', '\"') }
 $tagsJs = ($script:tags | ForEach-Object { '"' + (& $esc $_) + '"' }) -join ", "
