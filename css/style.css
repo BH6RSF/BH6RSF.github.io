@@ -1805,3 +1805,167 @@ a.tag:hover {
 
 
 
+
+/* ============================================================
+   数独 Sudoku（配色跟随博客主题变量）
+   ============================================================ */
+.sdk-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.sdk-hud {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+  color: var(--text-soft);
+}
+.sdk-hud b { color: var(--text); font-size: 1.05rem; }
+
+/* 难度按钮 */
+.sdk-levels {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.sdk-level-btn {
+  padding: 5px 16px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text-soft);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.sdk-level-btn:hover { border-color: var(--accent); color: var(--text); }
+.sdk-level-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* 棋盘 */
+.sdk-board {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  width: min(92vw, 414px);
+  aspect-ratio: 1 / 1;
+  background: var(--border);
+  border: 2px solid var(--text);
+  border-radius: 4px;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: opacity 0.2s;
+}
+.sdk-board.sdk-loading { opacity: 0.45; pointer-events: none; }
+
+.sdk-cell {
+  position: relative;
+  background: var(--card);
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.12s;
+  box-sizing: border-box;
+}
+/* 3×3 宫分隔线加粗 */
+.sdk-cell.br { border-right: 2px solid var(--text); }
+.sdk-cell.bb { border-bottom: 2px solid var(--text); }
+.sdk-cell:nth-child(9n) { border-right: none; }
+.sdk-cell:nth-child(n+73) { border-bottom: none; }
+
+.sdk-val {
+  font-size: clamp(15px, 4.2vw, 21px);
+  font-weight: 600;
+  color: var(--accent);
+  line-height: 1;
+}
+.sdk-cell.sdk-given .sdk-val { color: var(--text); font-weight: 700; }
+.sdk-cell.sdk-peer { background: var(--accent-soft); }
+.sdk-cell.sdk-same { background: var(--tag-bg); }
+.sdk-cell.sdk-sel { background: var(--accent); }
+.sdk-cell.sdk-sel .sdk-val { color: #fff; }
+.sdk-cell.sdk-sel .sdk-notes span { color: rgba(255,255,255,0.85); }
+.sdk-cell.sdk-conflict .sdk-val { color: #e5484d; }
+.sdk-cell.sdk-conflict { background: rgba(229, 72, 77, 0.12); }
+
+/* 候选数（3×3 小格） */
+.sdk-notes {
+  position: absolute;
+  inset: 1px;
+  display: none;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  font-size: clamp(7px, 1.9vw, 9px);
+  color: var(--text-faint);
+  line-height: 1;
+}
+.sdk-notes span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sdk-notes span.hl { color: var(--accent); font-weight: 700; }
+
+/* 数字键盘 */
+.sdk-pad {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  width: min(92vw, 414px);
+  margin-top: 12px;
+}
+.sdk-pad-btn {
+  aspect-ratio: 1 / 1;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  font-size: clamp(15px, 4vw, 19px);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.sdk-pad-btn:hover { border-color: var(--accent); color: var(--accent); }
+.sdk-pad-btn:active { transform: scale(0.94); background: var(--accent-soft); }
+.sdk-pad-fn { color: var(--text-soft); font-size: clamp(13px, 3.4vw, 17px); }
+
+/* 功能按钮 */
+.sdk-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 12px;
+}
+.sdk-action {
+  padding: 7px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text-soft);
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.sdk-action:hover { border-color: var(--accent); color: var(--accent); }
+.sdk-action.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* 完成动画 */
+.sdk-board.sdk-win { animation: sdk-win 0.9s ease; }
+@keyframes sdk-win {
+  0%, 100% { transform: scale(1); }
+  40% { transform: scale(1.03); box-shadow: 0 0 30px var(--accent); }
+}
+
+@media (max-width: 480px) {
+  .sdk-board, .sdk-pad { width: min(94vw, 360px); }
+  .sdk-action { padding: 6px 10px; font-size: 0.76rem; }
+  .sdk-pad { grid-template-columns: repeat(5, 1fr); gap: 5px; }
+}
