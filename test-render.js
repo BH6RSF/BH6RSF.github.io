@@ -38,6 +38,12 @@ const context = {
     scrollTo() {},
     scrollY: 0,
   },
+  // KaTeX 桩：让数学公式测试可在 Node 中运行（不加载真实 KaTeX）
+  katex: {
+    renderToString(tex, opts) {
+      return `<span class="katex-stub" data-display="${!!opts.displayMode}">${tex}</span>`;
+    },
+  },
 };
 vm.createContext(context);
 vm.runInContext(postsSrc, context);
@@ -117,6 +123,52 @@ check("阅读时长估算", (() => {
   const m1 = readingMinutes("这是一段中文文本。".repeat(300));
   const m2 = readingMinutes("word ".repeat(200));
   return m1 >= 1 && m2 >= 1;
+})());
+
+/* 2.6 KaTeX 数学公式 */
+console.log("\n[2.6] KaTeX 数学公式");
+check("行内公式 $...$", (() => {
+  const h = renderInline("方程 $E = mc^2$ 成立");
+  return h.includes("katex-stub") && h.includes("E = mc^2") && h.includes("data-display=\"false\"");
+})());
+check("反斜杠命令完整保留", (() => {
+  const h = renderInline("$\\frac{a}{b}$ 与 $\\sqrt{x}$");
+  return h.includes("\\frac{a}{b}") && h.includes("\\sqrt{x}");
+})());
+check("下标上标保留", renderInline("$a_1 + b^2$").includes("a_1 + b^2"));
+check("块级公式 $$...$$", (() => {
+  const h = renderMarkdown("$$E = mc^2$$");
+  return h.includes("math-block") && h.includes('data-display="true"');
+})());
+check("跨行块级公式", (() => {
+  const h = renderMarkdown("前\n\n$$\n\\int_0^1 x dx\n$$\n\n后");
+  return h.includes("katex-stub") && h.includes("\\int_0^1 x dx") && h.includes("前") && h.includes("后");
+})());
+check("\\[...\\] 语法", renderMarkdown("\\[ \\sum_{i=1}^n i \\]").includes('data-display="true"'));
+check("公式内 & 不被转义", (() => {
+  const h = renderMarkdown("$$\\begin{aligned} a &= b \\end{aligned}$$");
+  return h.includes("a &= b") && !h.includes("&amp;");
+})());
+check("行内代码里的 $ 不渲染", (() => {
+  const h = renderInline("代码 `$x$` 原样");
+  return !h.includes("katex-stub") && h.includes("<code>$x$</code>");
+})());
+check("公式外 HTML 仍被转义", (() => {
+  const h = renderInline("<script>x</script> $y$");
+  return !h.includes("<script>") && h.includes("&lt;script&gt;") && h.includes("katex-stub");
+})());
+check("孤立美元符号不误伤", !renderInline("价格 $ 100 元").includes("katex-stub"));
+check("KaTeX 缺失时降级", (() => {
+  // 临时移除 katex，验证降级不抛异常
+  const saved = context.katex;
+  delete context.katex;
+  let ok = false;
+  try {
+    const h = renderMarkdown("$$\\frac{1}{2}$$");
+    ok = h.includes("math-fallback") && h.includes("\\frac{1}{2}");
+  } catch (e) { ok = false; }
+  context.katex = saved;
+  return ok;
 })());
 
 /* 3. 所有文章的 content 都能渲染且不残留标记 */

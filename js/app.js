@@ -34,16 +34,50 @@ function escapeHtml(s) {
     .replace(/'/g, "&#39;");
 }
 
+/* ---------- KaTeX 数学公式 ---------- */
+/* 若页面未加载 KaTeX，则返回 null，调用处保持原文显示（优雅降级） */
+function renderMathTex(tex, display) {
+  if (typeof katex === "undefined" || !katex || typeof katex.renderToString !== "function") return null;
+  try {
+    return katex.renderToString(tex, {
+      displayMode: !!display,
+      throwOnError: false,      // 语法错误时显示红色原文，而不是抛异常
+      strict: false,
+      trust: false,             // 禁止 \href 等潜在危险命令
+      output: "htmlAndMathml",  // 兼顾可访问性（屏幕阅读器）
+    });
+  } catch (e) {
+    return null;
+  }
+}
+
 /* ---------- 迷你 Markdown 渲染器 ---------- */
 function renderInline(s) {
-  // 先转义 HTML，防止 XSS（Markdown 语法符号不受转义影响）
-  s = escapeHtml(s);
-  // 保护行内代码
+  // 1) 先保护行内代码（在原始串上处理，避免代码里的 $ 被当成公式）
   const codeSpans = [];
   s = s.replace(/`([^`]+)`/g, (m, c) => {
-    codeSpans.push(`<code>${c}</code>`);
+    codeSpans.push(`<code>${escapeHtml(c)}</code>`);
     return `\u0000${codeSpans.length - 1}\u0000`;
   });
+
+  // 2) 保护行内数学公式 $...$ 与 \(...\)（在转义前提取，保持 TeX 源码原样）
+  const mathSpans = [];
+  const stashMath = (tex) => {
+    const html = renderMathTex(tex, false);
+    if (html === null) return null;
+    mathSpans.push(html);
+    return `\u0001${mathSpans.length - 1}\u0001`;
+  };
+  s = s.replace(/\\\(([\s\S]+?)\\\)/g, (m, tex) => stashMath(tex) ?? m);
+  // 行内 $...$：内容首尾非空白、内部不含 $ 与换行，避免误伤美元金额等文本
+  s = s.replace(/\$([^\s$][^$\n]*?[^\s$]|[^\s$])\$/g, (m, tex) => {
+    if (tex.indexOf("\\$") >= 0) return m;
+    return stashMath(tex) ?? m;
+  });
+
+  // 3) 转义 HTML，防止 XSS（占位符用的是控制字符，不受转义影响）
+  s = escapeHtml(s);
+
   // 图片（必须在链接之前匹配，避免 ![alt](url) 被链接规则吞掉）
   s = s.replace(
     /!\[([^\]]*)\]\((https?:\/\/[^)\s]+)\)/g,
@@ -57,7 +91,9 @@ function renderInline(s) {
   // 斜体
   s = s.replace(/(^|[^*])\*([^*]+)\*/g, "$1<em>$2</em>");
   // 恢复行内代码
-  return s.replace(/\u0000(\d+)\u0000/g, (m, i) => codeSpans[+i]);
+  s = s.replace(/\u0000(\d+)\u0000/g, (m, i) => codeSpans[+i]);
+  // 恢复行内公式
+  return s.replace(/\u0001(\d+)\u0001/g, (m, i) => mathSpans[+i]);
 }
 
 /* ---------- 轻量代码语法高亮（GitHub Primer 风格配色） ---------- */
@@ -173,6 +209,43 @@ function renderMarkdown(md) {
       continue;
     }
     if (inCode) { codeBuf.push(raw); continue; }
+
+    /* 块级数学公式：$$...$$ 或 \[...\]（支持跨多行） */
+    if (t.startsWith("$$") || t.startsWith("\\[")) {
+      closeList(); closeQuote();
+      const isDollar = t.startsWith("$$");
+      const closer = isDollar ? "$$" : "\\]";
+      let body = isDollar ? t.slice(2) : t.slice(2);
+      let closed = false;
+
+      // 同一行就闭合的情况：$$ E = mc^2 $$
+      const sameLineIdx = body.indexOf(closer);
+      if (sameLineIdx >= 0) {
+        body = body.slice(0, sameLineIdx);
+        closed = true;
+      } else {
+        const buf = [body];
+        while (i + 1 < lines.length) {
+          i++;
+          const l = lines[i];
+          const ci = l.indexOf(closer);
+          if (ci >= 0) { buf.push(l.slice(0, ci)); closed = true; break; }
+          buf.push(l);
+        }
+        body = buf.join("\n");
+      }
+
+      const tex = body.trim();
+      const rendered = tex ? renderMathTex(tex, true) : null;
+      if (rendered !== null) {
+        html += `<div class="math-block">${rendered}</div>`;
+      } else if (tex) {
+        // KaTeX 未加载或渲染失败：按原文显示，保持公式可读
+        html += `<pre class="math-fallback">${escapeHtml((isDollar ? "$$" : "\\[") + tex + (isDollar ? "$$" : "\\]"))}</pre>`;
+      }
+      if (!closed && i >= lines.length) break;
+      continue;
+    }
 
     /* 空行 */
     if (t === "") { closeList(); closeQuote(); continue; }

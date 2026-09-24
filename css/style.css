@@ -1969,3 +1969,31 @@ a.tag:hover {
   .sdk-action { padding: 6px 10px; font-size: 0.76rem; }
   .sdk-pad { grid-template-columns: repeat(5, 1fr); gap: 5px; }
 }
+/* ============================================================
+   KaTeX 数学公式
+   ============================================================ */
+.math-block {
+  overflow-x: auto;          /* 长公式横向滚动，避免撑破布局 */
+  overflow-y: hidden;
+  padding: 4px 0 8px;
+  margin: 4px 0;
+}
+.math-block::-webkit-scrollbar { height: 6px; }
+.math-block::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* KaTeX 默认字体大小略小于正文，稍作放大以便阅读 */
+.post-body .katex { font-size: 1.06em; }
+
+/* 公式渲染失败 / KaTeX 未加载时的降级显示 */
+.math-fallback {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  overflow-x: auto;
+  font-size: 0.85rem;
+  color: var(--text-soft);
+}
+
+/* 行内公式与中文混排时留一点间距 */
+.post-body .katex { padding: 0 1px; }
