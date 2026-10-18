@@ -14,8 +14,10 @@ $ErrorActionPreference = "Stop"
 $dir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ts = Get-Date -Format "yyyyMMddHHmmss"
 
-# Match css/js references (with optional existing ?v= param)
-$pattern = '(css/style\.css|js/posts\.js|js/app\.js|js/games\.js|js/game2048\.js|js/game-race\.js)(\?v=\d+)?'
+# Match css/js references (with optional existing ?v= param).
+# Generic on purpose: any css/*.css or js/*.js file gets versioned, so newly
+# added scripts (e.g. sudoku.js, minesweeper.js) are covered automatically.
+$pattern = '(css/[A-Za-z0-9_.-]+\.css|js/[A-Za-z0-9_.-]+\.js)(\?v=\d+)?'
 
 # MatchEvaluator: builds "filename?v=timestamp" per match (safe under any encoding)
 $evaluator = [System.Text.RegularExpressions.MatchEvaluator]{

@@ -104,7 +104,7 @@
     roadOffset = 0;
     coinTimer = rnd(2000, 4000);
     coinInterval = rnd(4000, 7000);
-    holding = { up: false, down: false, left: false, right: false };
+    holding = { left: false, right: false };
     state = "idle";
     updateHud();
     setOverlay("🏎️ 赛车", "左右移动躲避障碍车，超车 +10 分，收集金币 +30 分", "▶ 开始游戏");

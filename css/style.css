@@ -1570,6 +1570,14 @@ a.tag:hover {
 .touch-pad .t-right { grid-column: 3; grid-row: 2; }
 .touch-pad .t-down { grid-column: 2; grid-row: 3; }
 
+/* 赛车触屏键：只需左右，两列并排加大更好按 */
+.touch-pad.race-pad {
+  grid-template-columns: repeat(2, 96px);
+  gap: 14px;
+}
+.touch-pad.race-pad .t-left { grid-column: 1; grid-row: 1; }
+.touch-pad.race-pad .t-right { grid-column: 2; grid-row: 1; }
+
 @media (pointer: coarse) {
   .touch-pad {
     display: grid;
@@ -1699,6 +1707,10 @@ a.tag:hover {
   display: flex;
   align-items: center;
   justify-content: center;
+  /* 2048 数字用常规无衬线字体（不跟随全站像素字体），等宽数字保证居中对齐 */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", Arial, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-weight: 800;
   font-size: 1.7rem;
   user-select: none;
