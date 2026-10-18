@@ -6,7 +6,7 @@
   <meta name="description" content="在线小游戏 —— RsfNotes：贪吃蛇、2048、赛车、数独，打开即玩。" />
   <title>游戏 · RsfNotes</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%230969da'/><stop offset='1' stop-color='%238250df'/></linearGradient></defs><rect width='100' height='100' rx='22' fill='url(%23g)'/><text x='50' y='70' font-size='54' text-anchor='middle' fill='white' font-family='monospace' font-weight='bold'>&lt;/&gt;</text></svg>" />
-  <link rel="stylesheet" href="css/style.css?v=20260924231213" />
+  <link rel="stylesheet" href="css/style.css?v=20261018175948" />
 </head>
 <body data-game="snake">
   <!-- 导航栏 -->
@@ -37,6 +37,7 @@
       <button class="game-tab" data-game="2048">🔢 2048</button>
       <button class="game-tab" data-game="race">🏎️ 赛车</button>
       <button class="game-tab" data-game="sudoku">🧩 数独</button>
+      <button class="game-tab" data-game="ms">💣 扫雷</button>
     </div>
 
     <div class="game-layout">
@@ -174,6 +175,40 @@
         </div>
       </div>
 
+      <!-- ============ 扫雷 ============ -->
+      <div class="game-panel fade-up" id="msPanel" hidden>
+        <div class="ms-wrap" id="msRoot">
+          <!-- 顶部：剩余雷数 / 笑脸 / 计时 -->
+          <div class="ms-top">
+            <div class="ms-led" id="msMineLed" title="剩余雷数">010</div>
+            <button class="ms-face" id="msFace" title="重新开始">🙂</button>
+            <div class="ms-led" id="msTimeLed" title="用时">000</div>
+          </div>
+
+          <!-- 难度 -->
+          <div class="ms-levels">
+            <button class="ms-level-btn active" data-level="easy">初级 9×9</button>
+            <button class="ms-level-btn" data-level="medium">中级 16×16</button>
+            <button class="ms-level-btn" data-level="hard">高级 30×16</button>
+          </div>
+
+          <!-- 棋盘 -->
+          <div class="ms-board" id="msGrid"></div>
+
+          <!-- 状态与操作 -->
+          <div class="ms-actions">
+            <span class="ms-status" id="msStatus">点击任意格子开始</span>
+            <button class="ms-newbtn" id="msNewBtn" title="重开一局（R）">🔄 新游戏</button>
+          </div>
+
+          <p class="game-help" style="margin-top:10px">
+            <b>左键</b>翻开 · <b>右键</b>插旗/问号 · <b>双击数字</b>快速翻开周围 · 手机<b>长按</b>插旗 · <b>R</b> 重开<br>
+            第一次点击保证不会踩雷 · 把非雷格子全部翻开即获胜
+          </p>
+          <p class="game-help" style="color:var(--accent)">🏆 最快纪录：<span id="msBest">暂无</span></p>
+        </div>
+      </div>
+
       <!-- 侧栏：源码 -->
       <aside class="game-side">
         <div class="widget fade-up">
@@ -189,7 +224,7 @@
         </div>
         <div class="widget fade-up">
           <h3><span class="arrow">▸</span> 💡 小提示</h3>
-          <p>🐍 贪吃蛇速度随得分加快；🔢 2048 合成到 2048 即达成目标；🏎️ 赛车左右移动躲避障碍车、超车得分、金币加分、难度递增；🧩 数独三档难度、每局保证唯一解。所有游戏的最高分/最快纪录都会保存在本浏览器。</p>
+          <p>🐍 贪吃蛇速度随得分加快；🔢 2048 合成到 2048 即达成目标；🏎️ 赛车左右移动躲避障碍车、超车得分、金币加分、难度递增；🧩 数独三档难度、每局保证唯一解；💣 扫雷是经典玩法，首次点击保证安全。所有游戏的最高分/最快纪录都会保存在本浏览器。</p>
         </div>
       </aside>
     </div>
@@ -208,11 +243,12 @@
 
   <button id="backTop" class="back-top" title="回到顶部">↑</button>
 
-  <script src="js/posts.js?v=20260924231213"></script>
-  <script src="js/app.js?v=20260924231213"></script>
-  <script src="js/games.js?v=20260924231213"></script>
-  <script src="js/game2048.js?v=20260924231213"></script>
-  <script src="js/game-race.js?v=20260924231213"></script>
-  <script src="js/sudoku.js?v=20260924224707"></script>
+  <script src="js/posts.js?v=20261018175948"></script>
+  <script src="js/app.js?v=20261018175948"></script>
+  <script src="js/games.js?v=20261018175948"></script>
+  <script src="js/game2048.js?v=20261018175948"></script>
+  <script src="js/game-race.js?v=20261018175948"></script>
+  <script src="js/sudoku.js?v=20261018175948"></script>
+  <script src="js/minesweeper.js?v=20261018175948"></script>
 </body>
 </html>
