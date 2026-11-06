@@ -3,10 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="在线小游戏 —— RsfNotes：贪吃蛇、2048、赛车、数独、XP 风格扫雷，打开即玩。" />
+  <meta name="description" content="在线小游戏 —— RsfNotes：贪吃蛇、2048、赛车、数独、XP 风格扫雷、俄罗斯方块，打开即玩。" />
   <title>游戏 · RsfNotes</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%230969da'/><stop offset='1' stop-color='%238250df'/></linearGradient></defs><rect width='100' height='100' rx='22' fill='url(%23g)'/><text x='50' y='70' font-size='54' text-anchor='middle' fill='white' font-family='monospace' font-weight='bold'>&lt;/&gt;</text></svg>" />
-  <link rel="stylesheet" href="css/style.css?v=20261106230359" />
+  <link rel="stylesheet" href="css/style.css?v=20261106232725" />
+  <link rel="stylesheet" href="css/tetris.css?v=20261106232725" />
 </head>
 <body data-game="snake">
   <!-- 导航栏 -->
@@ -26,7 +27,7 @@
   <!-- 页头 -->
   <header class="page-header container">
     <h1 class="fade-up">🎮 游戏中心</h1>
-    <p class="subtitle fade-up">贪吃蛇由桌面版 C++ 源码移植 · 扫雷复刻 Windows XP 经典界面</p>
+    <p class="subtitle fade-up">贪吃蛇 C++ 移植 · 扫雷复刻 XP 界面 · 俄罗斯方块街机 / GB 双风格</p>
   </header>
 
   <!-- 主内容 -->
@@ -38,6 +39,7 @@
       <button class="game-tab" data-game="race">🏎️ 赛车</button>
       <button class="game-tab" data-game="sudoku">🧩 数独</button>
       <button class="game-tab" data-game="ms">💣 扫雷</button>
+      <button class="game-tab" data-game="tetris">🧱 俄罗斯方块</button>
     </div>
 
     <div class="game-layout">
@@ -253,6 +255,84 @@
         </div>
       </div>
 
+      <!-- ============ 俄罗斯方块 ============ -->
+      <div class="game-panel fade-up" id="tetrisPanel" hidden>
+        <div class="tetris-app" id="tetrisRoot" data-theme="classic" tabindex="-1">
+          <header class="tetris-header">
+            <h2 class="tetris-title">TETRIS</h2>
+            <p class="tetris-sub">CLASSIC EDITION · 10 × 20</p>
+          </header>
+
+          <div class="tetris-layout">
+            <section class="tetris-board-wrap">
+              <canvas id="tetrisBoard" width="300" height="600" aria-label="俄罗斯方块棋盘"></canvas>
+              <div class="tetris-overlay" id="tetrisOverlay">
+                <div>
+                  <div class="tetris-ov-icon" id="tetrisOvIcon">▣</div>
+                  <h2 id="tetrisOvTitle">TETRIS</h2>
+                  <p id="tetrisOvText">经典 A 型规则 · 每消 10 行升一级</p>
+                  <button type="button" class="tetris-ov-btn" id="tetrisOvBtn">PRESS START</button>
+                  <div class="tetris-ov-hint blink" id="tetrisOvHint">SPACE / ENTER 开始 · 支持触屏</div>
+                </div>
+              </div>
+            </section>
+
+            <aside class="tetris-side">
+              <div class="tetris-card tetris-card--hold">
+                <h3>HOLD / 暂存</h3>
+                <div class="tetris-mini-wrap tetris-hold-wrap">
+                  <canvas id="tetrisHold" width="120" height="76"></canvas>
+                </div>
+              </div>
+
+              <div class="tetris-card tetris-card--next">
+                <h3>NEXT / 下一个</h3>
+                <div class="tetris-next-row">
+                  <div class="tetris-mini-wrap"><canvas class="tetris-nxt" width="120" height="62"></canvas></div>
+                  <div class="tetris-mini-wrap"><canvas class="tetris-nxt" width="120" height="62"></canvas></div>
+                  <div class="tetris-mini-wrap"><canvas class="tetris-nxt" width="120" height="62"></canvas></div>
+                </div>
+              </div>
+
+              <div class="tetris-card tetris-card--score">
+                <h3>SCORE / 数据</h3>
+                <div class="tetris-stat"><span>SCORE</span><strong class="big" id="tetrisScore">0</strong></div>
+                <div class="tetris-stat"><span>HIGH</span><strong id="tetrisBest">0</strong></div>
+                <div class="tetris-stat"><span>LINES</span><strong id="tetrisLines">0</strong></div>
+                <div class="tetris-stat"><span>LEVEL</span><strong id="tetrisLevel">1</strong></div>
+              </div>
+
+              <div class="tetris-card tetris-card--system">
+                <h3>SYSTEM / 系统</h3>
+                <div class="tetris-btns">
+                  <button type="button" class="tetris-btn" id="tetrisBtnSound">音效 开</button>
+                  <button type="button" class="tetris-btn" id="tetrisBtnPause">暂停</button>
+                  <button type="button" class="tetris-btn wide" id="tetrisBtnTheme">风格: 经典街机</button>
+                  <button type="button" class="tetris-btn wide" id="tetrisBtnNew">重新开始 (R)</button>
+                </div>
+              </div>
+            </aside>
+          </div>
+
+          <p class="tetris-help">← → 移动 · ↓ 软降 · SPACE 硬降 · ↑ / Z 旋转 · C 暂存 · P 暂停 · R 重开</p>
+
+          <div class="tetris-touch">
+            <button type="button" class="tetris-tbtn" data-act="left">←</button>
+            <button type="button" class="tetris-tbtn" data-act="down">↓</button>
+            <button type="button" class="tetris-tbtn" data-act="right">→</button>
+            <button type="button" class="tetris-tbtn" data-act="rotate">↻</button>
+            <button type="button" class="tetris-tbtn" data-act="drop">⤓</button>
+            <button type="button" class="tetris-tbtn wide" data-act="hold">暂存<small>C</small></button>
+            <button type="button" class="tetris-tbtn wide" data-act="pause">暂停<small>P</small></button>
+            <button type="button" class="tetris-tbtn wide" data-act="sound">音效<small>ON/OFF</small></button>
+            <button type="button" class="tetris-tbtn wide" data-act="new">重开<small>R</small></button>
+            <button type="button" class="tetris-tbtn wide" data-act="ccw">逆转<small>Z</small></button>
+          </div>
+
+          <footer class="tetris-foot">键盘 / 触屏均可操作 · 最高分与风格设置保存在本机</footer>
+        </div>
+      </div>
+
       <!-- 侧栏：源码 -->
       <aside class="game-side">
         <div class="widget fade-up">
@@ -268,7 +348,7 @@
         </div>
         <div class="widget fade-up">
           <h3><span class="arrow">▸</span> 💡 小提示</h3>
-          <p>🐍 贪吃蛇速度随得分加快；🔢 2048 合成到 2048 即达成目标；🏎️ 赛车左右移动躲避障碍车、超车得分、金币加分、难度递增；🧩 数独三档难度、每局保证唯一解；💣 扫雷复刻 Windows XP 的 Luna 蓝色标题栏、立体格子和红色 LED 计时，首次点击保证安全。所有游戏的最高分/最快纪录都会保存在本浏览器。</p>
+          <p>🐍 贪吃蛇速度随得分加快；🔢 2048 合成到 2048 即达成目标；🏎️ 赛车左右移动躲避障碍车、超车得分、金币加分、难度递增；🧩 数独三档难度、每局保证唯一解；💣 扫雷复刻 Windows XP 的 Luna 蓝色标题栏、立体格子和红色 LED 计时，首次点击保证安全；🧱 俄罗斯方块是经典街机 / GB 单色双皮肤，支持暂存、幽灵落点、软降硬降和触屏手势。所有游戏的最高分/最快纪录都会保存在本浏览器。</p>
         </div>
       </aside>
     </div>
@@ -287,12 +367,13 @@
 
   <button id="backTop" class="back-top" title="回到顶部">↑</button>
 
-  <script src="js/posts.js?v=20261106230359"></script>
-  <script src="js/app.js?v=20261106230359"></script>
-  <script src="js/games.js?v=20261106230359"></script>
-  <script src="js/game2048.js?v=20261106230359"></script>
-  <script src="js/game-race.js?v=20261106230359"></script>
-  <script src="js/sudoku.js?v=20261106230359"></script>
-  <script src="js/minesweeper.js?v=20261106230359"></script>
+  <script src="js/posts.js?v=20261106232725"></script>
+  <script src="js/app.js?v=20261106232725"></script>
+  <script src="js/games.js?v=20261106232725"></script>
+  <script src="js/game2048.js?v=20261106232725"></script>
+  <script src="js/game-race.js?v=20261106232725"></script>
+  <script src="js/sudoku.js?v=20261106232725"></script>
+  <script src="js/minesweeper.js?v=20261106232725"></script>
+  <script src="js/tetris.js?v=20261106232725"></script>
 </body>
 </html>

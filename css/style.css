@@ -1617,6 +1617,7 @@ a.tag:hover {
 /* ---------- 游戏中心 Tab ---------- */
 .game-tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
   margin-bottom: 20px;
 }
