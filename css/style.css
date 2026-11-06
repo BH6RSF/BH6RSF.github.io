@@ -2011,12 +2011,155 @@ a.tag:hover {
 .post-body .katex { padding: 0 1px; }
 
 /* ============================================================
-   扫雷 Minesweeper（经典 3D 立体格子 · 跟随明暗主题）
+   扫雷 Minesweeper（Windows XP 风格 · 固定 Luna 配色）
+   独立于明暗主题：还原 XP 的蓝标题栏 / 立体格子 / 红色 LED
    ============================================================ */
 .ms-wrap {
+  --xp-face: #ece9d8;
+  --xp-dark: #9d9a8f;
+  --xp-shadow: #808080;
+  --xp-light: #ffffff;
+  --xp-title: linear-gradient(180deg, #0a64f0 0%, #3c9bff 9%, #0057e3 44%, #0054e3 88%, #003bb5 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+/* XP 窗口外壳 */
+.ms-window {
+  width: min(100%, 500px);
+  background: var(--xp-face);
+  border: 1px solid #0054e3;
+  border-radius: 8px 8px 0 0;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.28), 0 2px 6px rgba(0, 0, 0, 0.18);
+  padding-bottom: 6px;
+  font-family: Tahoma, "MS Sans Serif", "Segoe UI", "Microsoft YaHei", sans-serif;
+}
+
+/* 收起窗口：只留标题栏 */
+.ms-wrap.ms-collapsed .ms-menubar,
+.ms-wrap.ms-collapsed .ms-screen-wrap,
+.ms-wrap.ms-collapsed .ms-actions,
+.ms-wrap.ms-collapsed .game-help { display: none; }
+.ms-wrap.ms-collapsed .ms-window { padding-bottom: 0; }
+
+/* ---------- 标题栏 ---------- */
+.ms-titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 28px;
+  padding: 0 3px 0 6px;
+  background: var(--xp-title);
+  border-radius: 6px 6px 0 0;
+  color: #fff;
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.55);
+  user-select: none;
+}
+.ms-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+.ms-title svg { width: 16px; height: 16px; display: block; }
+.ms-titlebar-btns { display: flex; gap: 2px; }
+
+.ms-tb-btn {
+  width: 21px;
+  height: 21px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #5aa4ff 0%, #0a5fe0 45%, #0046c8 100%);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 3px;
+  color: #fff;
+  font-family: Tahoma, "Segoe UI", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  text-shadow: none;
+}
+.ms-tb-btn:hover { filter: brightness(1.18); }
+.ms-tb-btn:active { filter: brightness(0.82); }
+
+/* ---------- 菜单栏 ---------- */
+.ms-menubar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 2px;
+  background: var(--xp-face);
+  border-bottom: 1px solid #d4d0c8;
+}
+.ms-menu { position: relative; height: 100%; }
+
+.ms-menu-btn {
+  height: 100%;
+  padding: 0 9px;
+  background: transparent;
+  border: 0;
+  color: #000;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1;
+  cursor: default;
+}
+.ms-menu-btn:hover,
+.ms-menu-btn.open { background: #316ac5; color: #fff; }
+.ms-menu-btn u { text-decoration: underline; text-underline-offset: 1px; }
+
+.ms-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 60;
+  min-width: 164px;
+  padding: 2px;
+  background: #fff;
+  border: 1px solid #aca899;
+  box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.3);
+}
+.ms-dropdown[hidden] { display: none; }
+
+.ms-menu-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 4px 16px 4px 5px;
+  background: transparent;
+  border: 0;
+  color: #000;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: left;
+  white-space: nowrap;
+  cursor: default;
+}
+.ms-menu-item::before { content: ""; flex: 0 0 16px; }
+.ms-menu-item:hover { background: #316ac5; color: #fff; }
+.ms-level-btn.active::before { content: "✓"; font-weight: 700; }
+.ms-menu-sep { height: 1px; margin: 3px 2px; background: #d4d0c8; }
+.ms-menu-shortcut {
+  margin-left: auto;
+  padding-left: 24px;
+  color: #808080;
+}
+.ms-menu-item:hover .ms-menu-shortcut { color: #e8e8e8; }
+
+/* ---------- 游戏区 ---------- */
+.ms-screen-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 5px 6px 2px;
 }
 
 /* 顶部：剩余雷数 / 笑脸 / 计时 */
@@ -2024,174 +2167,254 @@ a.tag:hover {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  width: min(94vw, 460px);
-  padding: 8px 10px;
-  margin-bottom: 10px;
-  background: var(--bg-soft);
-  border: 2px solid var(--border);
-  border-radius: 10px;
+  gap: 10px;
+  width: 100%;
+  padding: 1px 2px 6px;
 }
 
-/* LED 数字显示 */
+/* LED 数码管 */
 .ms-led {
-  background: #14161a;
-  color: #ff3b30;
-  font-family: 'Consolas', 'Courier New', monospace;
-  font-size: 1.45rem;
+  min-width: 68px;
+  padding: 1px 6px;
+  background: #000;
+  border: 2px solid;
+  border-color: var(--xp-shadow) var(--xp-light) var(--xp-light) var(--xp-shadow);
+  color: #ff0000;
+  font-family: "Consolas", "Courier New", monospace;
+  font-size: 22px;
   font-weight: 700;
-  letter-spacing: 3px;
-  line-height: 1.1;
-  padding: 3px 8px;
-  border-radius: 6px;
-  text-shadow: 0 0 6px rgba(255, 59, 48, 0.55);
-  min-width: 74px;
+  line-height: 1.25;
+  letter-spacing: 2px;
   text-align: center;
+  text-shadow: 0 0 5px rgba(255, 0, 0, 0.65);
 }
 
 /* 笑脸按钮 */
 .ms-face {
-  width: 44px;
-  height: 44px;
   flex: 0 0 auto;
-  font-size: 1.5rem;
-  line-height: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--card);
-  border: 2px solid var(--border);
-  border-radius: 10px;
-  cursor: pointer;
-  transition: transform 0.15s, background 0.15s;
+  width: 34px;
+  height: 34px;
   padding: 0;
-}
-.ms-face:hover { background: var(--accent-soft); }
-.ms-face:active { transform: scale(0.92); }
-
-/* 难度按钮 */
-.ms-levels {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-bottom: 10px;
-}
-.ms-level-btn {
-  padding: 5px 14px;
-  border-radius: 20px;
-  font-size: 0.82rem;
-  border: 1px solid var(--border);
-  background: var(--card);
-  color: var(--text-soft);
+  background-color: var(--xp-face);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 26px 26px;
+  border: 2px solid;
+  border-color: var(--xp-light) var(--xp-shadow) var(--xp-shadow) var(--xp-light);
   cursor: pointer;
-  transition: all 0.2s;
-  font-family: inherit;
 }
-.ms-level-btn:hover { border-color: var(--accent); color: var(--text); }
-.ms-level-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.ms-face:active {
+  border-color: var(--xp-shadow) var(--xp-light) var(--xp-light) var(--xp-shadow);
+}
+.ms-face:focus-visible { outline: 1px dotted #000; outline-offset: -4px; }
 
-/* 棋盘 */
+.ms-face[data-face="smile"] {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='%23ffd93b' stroke='%23000' stroke-width='1.4'/%3E%3Ccircle cx='11' cy='12' r='2' fill='%23000'/%3E%3Ccircle cx='21' cy='12' r='2' fill='%23000'/%3E%3Cpath d='M9.5 19c1.8 3.2 4.2 4.6 6.5 4.6s4.7-1.4 6.5-4.6' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+.ms-face[data-face="o"] {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='%23ffd93b' stroke='%23000' stroke-width='1.4'/%3E%3Ccircle cx='11' cy='11.5' r='2.2' fill='%23000'/%3E%3Ccircle cx='21' cy='11.5' r='2.2' fill='%23000'/%3E%3Cellipse cx='16' cy='21' rx='2.6' ry='3.2' fill='none' stroke='%23000' stroke-width='1.6'/%3E%3C/svg%3E");
+}
+.ms-face[data-face="cool"] {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='%23ffd93b' stroke='%23000' stroke-width='1.4'/%3E%3Crect x='6.5' y='11' width='8.5' height='5' rx='1.8' fill='%23000'/%3E%3Crect x='17' y='11' width='8.5' height='5' rx='1.8' fill='%23000'/%3E%3Cpath d='M15 13h2' stroke='%23000' stroke-width='1.5'/%3E%3Cpath d='M10 20.5c1.7 2.8 3.9 4.2 6 4.2s4.3-1.4 6-4.2' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+.ms-face[data-face="dead"] {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='%23ffd93b' stroke='%23000' stroke-width='1.4'/%3E%3Cpath d='M8.5 9.5l4 4M12.5 9.5l-4 4M19.5 9.5l4 4M23.5 9.5l-4 4' stroke='%23000' stroke-width='1.6' stroke-linecap='round'/%3E%3Cpath d='M9.5 21c2 3 4.2 4 6.5 4s4.5-1 6.5-4' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+
+/* ---------- 棋盘 ---------- */
 .ms-board {
   display: grid;
   grid-template-columns: repeat(var(--ms-cols, 9), 1fr);
-  gap: 2px;
-  padding: 6px;
-  background: var(--bg-soft);
-  border: 2px solid var(--border);
-  border-radius: 10px;
-  width: min(94vw, 460px);
+  gap: 0;
+  width: 100%;
+  padding: 2px;
+  background: var(--xp-face);
+  border: 3px solid;
+  border-color: var(--xp-shadow) var(--xp-light) var(--xp-light) var(--xp-shadow);
   user-select: none;
   -webkit-user-select: none;
-  transition: box-shadow 0.3s;
+  container-type: inline-size;
 }
-.ms-board.ms-win { box-shadow: 0 0 0 3px #22c55e; }
-.ms-board.ms-lose { box-shadow: 0 0 0 3px #ef4444; }
 
-/* 格子 */
+/* 格子：未翻开 = 凸起，已翻开 = 平/凹陷 */
 .ms-cell {
+  position: relative;
   aspect-ratio: 1 / 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: clamp(11px, 3.2vw, 15px);
+  background: var(--xp-face);
+  color: #000;
+  font-family: Tahoma, "MS Sans Serif", "Microsoft YaHei", sans-serif;
+  font-size: clamp(7px, 2.4vw, 24px);
+  font-size: clamp(7px, calc((100cqw - 8px) / var(--ms-cols, 9) * 0.6), 30px);
   font-weight: 700;
   line-height: 1;
-  border-radius: 4px;
   cursor: pointer;
-  transition: background 0.12s, transform 0.08s;
   box-sizing: border-box;
   overflow: hidden;
 }
 
-/* 未翻开：凸起立体感 */
 .ms-cell.ms-covered {
-  background: var(--border);
-  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.4),
-              inset -1px -1px 0 rgba(0, 0, 0, 0.2);
+  background: var(--xp-face);
+  box-shadow: inset 2px 2px 0 var(--xp-light),
+              inset -2px -2px 0 var(--xp-dark),
+              inset 0 0 0 1px #d8d4c7;
 }
-[data-theme="dark"] .ms-cell.ms-covered {
-  background: #3b4453;
-  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.14),
-              inset -1px -1px 0 rgba(0, 0, 0, 0.4);
+.ms-cell.ms-covered:hover { background-color: #f4f1e4; }
+.ms-cell.ms-covered:active {
+  background-color: #e7e3d5;
+  box-shadow: inset 2px 2px 0 var(--xp-dark),
+              inset -2px -2px 0 var(--xp-light);
 }
-.ms-cell.ms-covered:hover { filter: brightness(1.15); }
-.ms-cell.ms-covered:active { transform: scale(0.94); }
+.ms-board.ms-win .ms-cell.ms-covered:hover,
+.ms-board.ms-lose .ms-cell.ms-covered:hover { background-color: var(--xp-face); }
+.ms-board.ms-win .ms-cell.ms-covered,
+.ms-board.ms-lose .ms-cell.ms-covered { cursor: default; }
 
-/* 已翻开：凹陷感 */
 .ms-cell.ms-open {
-  background: var(--card);
-  box-shadow: inset 0 0 0 1px var(--border);
+  background: var(--xp-face);
+  box-shadow: inset 1px 1px 0 #b6b2a5, inset -1px -1px 0 #fbf9ef;
   cursor: default;
 }
+
 .ms-cell.ms-mine {
-  background: #ff4d4f;
-  box-shadow: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cg stroke='%23000' stroke-width='1.2' stroke-linecap='round'%3E%3Cpath d='M8 1.4v13.2M1.4 8h13.2M3.3 3.3l9.4 9.4M12.7 3.3L3.3 12.7'/%3E%3C/g%3E%3Ccircle cx='8' cy='8' r='4.1' fill='%23000'/%3E%3Ccircle cx='6.6' cy='6.6' r='1' fill='%23fff'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 72% 72%;
 }
 .ms-cell.ms-hit {
-  background: #ff1f1f !important;
+  background-color: #ff3b30 !important;
   animation: ms-hit-pulse 0.45s ease;
 }
 @keyframes ms-hit-pulse {
   0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.18); }
-}
-.ms-cell.ms-flag { font-size: clamp(10px, 2.9vw, 14px); }
-.ms-cell.ms-question { color: var(--accent); }
-.ms-cell.ms-wrong {
-  background: rgba(239, 68, 68, 0.22);
-  font-size: clamp(9px, 2.6vw, 13px);
+  50% { transform: scale(1.12); }
 }
 
-/* 底部状态与按钮 */
+.ms-cell.ms-flag {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.6 14.2V2' stroke='%23000' stroke-width='1.4' stroke-linecap='round'/%3E%3Cpath d='M4.6 2.1c2.3-.8 4.4-.8 7.1 0v5.1c-2.7-.8-4.8-.8-7.1 0z' fill='%23e60000' stroke='%23000' stroke-width='.9' stroke-linejoin='round'/%3E%3Cpath d='M2.4 14.3h5.2' stroke='%23000' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 68% 78%;
+}
+.ms-cell.ms-question { color: #000; }
+.ms-cell.ms-wrong {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cg stroke='%23000' stroke-width='1.2' stroke-linecap='round'%3E%3Cpath d='M8 1.4v13.2M1.4 8h13.2M3.3 3.3l9.4 9.4M12.7 3.3L3.3 12.7'/%3E%3C/g%3E%3Ccircle cx='8' cy='8' r='4.1' fill='%23000'/%3E%3Ccircle cx='6.6' cy='6.6' r='1' fill='%23fff'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 56% 56%;
+}
+.ms-cell.ms-wrong::after {
+  content: "✕";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ff0000;
+  font-size: 1.15em;
+  line-height: 1;
+  text-shadow: 0 0 2px #fff, 0 1px 0 #fff;
+}
+
+/* ---------- 底部状态 ---------- */
 .ms-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-top: 12px;
-  flex-wrap: wrap;
   justify-content: center;
+  margin-top: 10px;
+  font-size: 12px;
 }
 .ms-status {
   font-size: 0.85rem;
   color: var(--text-soft);
 }
-.ms-newbtn {
-  padding: 6px 14px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background: var(--card);
-  color: var(--text-soft);
-  font-size: 0.82rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-family: inherit;
-}
-.ms-newbtn:hover { border-color: var(--accent); color: var(--accent); }
 
+/* ---------- XP 对话框 ---------- */
+.ms-dialog {
+  width: min(90vw, 340px);
+  padding: 0;
+  background: var(--xp-face);
+  border: 1px solid #0054e3;
+  border-radius: 8px 8px 0 0;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  color: #000;
+  font-family: Tahoma, "MS Sans Serif", "Segoe UI", "Microsoft YaHei", sans-serif;
+  font-size: 12.5px;
+}
+.ms-dialog::backdrop { background: rgba(0, 0, 0, 0.35); }
+
+.ms-dialog-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 26px;
+  padding: 0 3px 0 8px;
+  background: var(--xp-title);
+  border-radius: 6px 6px 0 0;
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 700;
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.55);
+  user-select: none;
+}
+.ms-dialog-x {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #5aa4ff 0%, #0a5fe0 45%, #0046c8 100%);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 3px;
+  color: #fff;
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+  text-shadow: none;
+}
+.ms-dialog-x:hover { filter: brightness(1.18); }
+
+.ms-dialog-body {
+  padding: 14px 16px 4px;
+  line-height: 1.75;
+}
+.ms-dialog-body p { margin: 0 0 6px; }
+.ms-dialog-body b { color: #003399; }
+.ms-dialog-body ul { margin: 4px 0 0 18px; padding: 0; }
+.ms-dialog-body li { margin-bottom: 3px; }
+.ms-dialog-body .ms-dialog-note { color: #555; font-size: 11.5px; }
+
+.ms-dialog-foot {
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 14px 12px;
+}
+.ms-dialog-ok {
+  min-width: 78px;
+  height: 23px;
+  padding: 0 12px;
+  background: linear-gradient(180deg, #fdfdfd 0%, #ece9d8 55%, #dcd8c8 100%);
+  border: 1px solid #003c74;
+  border-radius: 3px;
+  color: #000;
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.ms-dialog-ok:active { background: #dcd8c8; }
+
+/* ---------- 手机 ---------- */
 @media (max-width: 480px) {
-  .ms-top, .ms-board { width: min(94vw, 380px); }
-  .ms-led { font-size: 1.15rem; letter-spacing: 2px; min-width: 62px; padding: 2px 6px; }
-  .ms-face { width: 38px; height: 38px; font-size: 1.25rem; }
-  .ms-board { gap: 1px; padding: 4px; }
+  .ms-window { width: 100%; }
+  .ms-titlebar { height: 26px; }
+  .ms-tb-btn { width: 24px; height: 24px; }
+  .ms-led { min-width: 58px; font-size: 18px; letter-spacing: 1px; padding: 1px 5px; }
+  .ms-face { width: 30px; height: 30px; background-size: 23px 23px; }
+  .ms-screen-wrap { padding: 4px 4px 1px; }
+  .ms-top { padding-bottom: 5px; }
+  .ms-board { max-width: 100%; border-width: 2px; }
 }

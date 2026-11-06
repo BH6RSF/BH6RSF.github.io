@@ -1,8 +1,9 @@
 /* ============================================================
-   RsfNotes · 扫雷 Minesweeper（Windows XP 经典玩法）
+   RsfNotes · 扫雷 Minesweeper（Windows XP 经典界面复刻）
    三种难度：初级 9×9/10 雷 · 中级 16×16/40 雷 · 高级 30×16/99 雷
    特性：首点不炸 · 右键插旗/问号 · 双击数字快速翻开（chord）
          计时器 · 剩余雷数 · 最快纪录 · 手机长按插旗
+         XP 标题栏 / 下拉菜单 / LED 计数 / 笑脸表情
    ============================================================ */
 (function () {
   const root = document.getElementById("msRoot");
@@ -24,6 +25,8 @@
   let seconds = 0;
   let flagCount = 0;
   let bestTime = {};
+  let pausedByDialog = false;
+  let pausedByCollapse = false;
 
   const $ = (id) => document.getElementById(id);
   const faceBtn = $("msFace");
@@ -50,6 +53,19 @@
   const cfg = () => LEVELS[level];
   const inBounds = (r, c) => r >= 0 && r < cfg().rows && c >= 0 && c < cfg().cols;
 
+  /* ---------- 笑脸表情 ---------- */
+  const FACE_LABEL = {
+    smile: "重新开始",
+    o: "按住中",
+    cool: "通关了，再来一局",
+    dead: "踩到雷了，再来一局",
+  };
+  function setFace(mood) {
+    faceBtn.dataset.face = mood;
+    faceBtn.title = FACE_LABEL[mood] || FACE_LABEL.smile;
+    faceBtn.setAttribute("aria-label", faceBtn.title);
+  }
+
   function neighbors(r, c) {
     const out = [];
     for (let dr = -1; dr <= 1; dr++) {
@@ -74,9 +90,11 @@
     firstClick = true;
     playing = true;          // 允许点击（首点时布置地雷）
     stopTimer();
+    pausedByDialog = false;
+    pausedByCollapse = false;
     seconds = 0;
     flagCount = 0;
-    faceBtn.textContent = "🙂";
+    setFace("smile");
     gridBox.classList.remove("ms-win", "ms-lose");
     buildGrid();
     render();
@@ -144,21 +162,21 @@
         const el = cells[r * c.cols + col];
         const b = board[r][col];
         el.className = "ms-cell";
+        el.style.color = "";
 
         if (b.open) {
           if (b.mine) {
             el.classList.add("ms-open", "ms-mine");
-            el.textContent = "💣";
+            el.textContent = "";
           } else {
             const n = countMines(r, col);
             el.classList.add("ms-open");
             el.textContent = n ? String(n) : "";
             if (n) el.style.color = NUM_COLOR[n];
-            else { el.textContent = ""; el.style.color = ""; }
           }
         } else if (b.flag) {
           el.classList.add("ms-covered", "ms-flag");
-          el.textContent = "🚩";
+          el.textContent = "";
         } else if (b.question) {
           el.classList.add("ms-covered", "ms-question");
           el.textContent = "?";
@@ -168,7 +186,7 @@
         }
         if (b.wrongFlag) {
           el.classList.add("ms-wrong");
-          el.textContent = "❌";
+          el.textContent = "";
         }
       }
     }
@@ -177,6 +195,159 @@
   }
 
   function setStatus(t) { if (statusEl) statusEl.textContent = t; }
+
+  /* ---------- XP 菜单 ---------- */
+  const menuBar = $("msMenubar");
+
+  function closeMenus() {
+    document.querySelectorAll("#msMenubar .ms-dropdown").forEach((d) => { d.hidden = true; });
+    document.querySelectorAll("#msMenubar .ms-menu-btn").forEach((b) => {
+      b.classList.remove("open");
+      b.setAttribute("aria-expanded", "false");
+    });
+  }
+
+  if (menuBar) {
+    menuBar.querySelectorAll(".ms-menu-btn").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const id = "msMenu" + btn.dataset.menu.charAt(0).toUpperCase() + btn.dataset.menu.slice(1);
+        const box = $(id);
+        if (!box) return;
+        const wasOpen = !box.hidden;
+        closeMenus();
+        if (!wasOpen) {
+          box.hidden = false;
+          btn.classList.add("open");
+          btn.setAttribute("aria-expanded", "true");
+        }
+      });
+    });
+  }
+
+  document.addEventListener("click", (e) => {
+    if (menuBar && !menuBar.contains(e.target)) closeMenus();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeMenus();
+  });
+
+  /* ---------- 收起 / 展开窗口 ---------- */
+  const minBtn = $("msMinBtn");
+  function setCollapsed(v) {
+    if (v) {
+      if (playing && timerId) {
+        stopTimer();
+        pausedByCollapse = true;
+        setStatus("已暂停…");
+      }
+    } else if (pausedByCollapse && playing) {
+      startTimer();
+      setStatus("进行中…");
+      pausedByCollapse = false;
+    }
+    root.classList.toggle("ms-collapsed", v);
+    if (minBtn) {
+      minBtn.textContent = v ? "❐" : "–";
+      minBtn.title = v ? "展开窗口" : "收起窗口";
+      minBtn.setAttribute("aria-label", minBtn.title);
+    }
+    if (v) closeMenus();
+  }
+  if (minBtn) minBtn.addEventListener("click", () => setCollapsed(!root.classList.contains("ms-collapsed")));
+
+  /* ---------- XP 对话框 ---------- */
+  const dlg = $("msDialog");
+  const dlgTitle = $("msDialogTitle");
+  const dlgBody = $("msDialogBody");
+
+  const DIALOGS = {
+    help: {
+      title: "扫雷",
+      html: "<p><b>玩法</b></p><ul>" +
+        "<li><b>左键</b>翻开格子，数字表示周围 8 格的地雷数。</li>" +
+        "<li><b>右键</b>依次插旗、问号、取消；手机上<b>长按</b>插旗。</li>" +
+        "<li><b>双击数字</b>：周围旗数与数字相同时，快速翻开其余格子。</li>" +
+        "<li>第一次点击保证不会踩雷；翻开全部非雷格即获胜。</li>" +
+        "</ul><p class='ms-dialog-note'>快捷键：F2 / R 重开，Esc 关闭窗口。</p>",
+    },
+    about: {
+      title: "关于扫雷",
+      html: "<p><b>RsfNotes · 扫雷</b></p>" +
+        "<p>Windows XP 经典界面复刻：Luna 蓝色标题栏、立体格子、红色 LED 计时与笑脸表情。</p>" +
+        "<p>初级 9×9 / 10 雷 · 中级 16×16 / 40 雷 · 高级 30×16 / 99 雷。</p>" +
+        "<p>固定使用 XP Luna 配色，不随博客明暗主题切换。</p>" +
+        "<p>纯 HTML / CSS / JavaScript 实现，最快纪录保存在本机浏览器。</p>",
+    },
+  };
+
+  function closeDialog() {
+    if (!dlg) return;
+    const wasPaused = pausedByDialog;
+    pausedByDialog = false;
+    if (typeof dlg.close === "function" && dlg.open) dlg.close();
+    else dlg.removeAttribute("open");
+    if (wasPaused && playing) {
+      startTimer();
+      setStatus("进行中…");
+    }
+    if (faceBtn) faceBtn.focus({ preventScroll: true });
+  }
+
+  function openDialog(kind) {
+    const data = DIALOGS[kind];
+    if (!data) return;
+    showDialog(data.title, data.html);
+  }
+
+  function showDialog(title, html) {
+    if (!dlg) return;
+    closeMenus();
+    dlgTitle.textContent = title;
+    dlgBody.innerHTML = html;
+    if (playing && timerId) {
+      stopTimer();
+      pausedByDialog = true;
+      setStatus("已暂停…");
+    }
+    if (!dlg.open) {
+      if (typeof dlg.showModal === "function") dlg.showModal();
+      else dlg.setAttribute("open", "");
+    }
+  }
+
+  const helpBtn = $("msHelpBtn");
+  if (helpBtn) helpBtn.addEventListener("click", () => openDialog("help"));
+  const helpItem = $("msHelpItem");
+  if (helpItem) helpItem.addEventListener("click", () => openDialog("help"));
+  const aboutItem = $("msAboutItem");
+  if (aboutItem) aboutItem.addEventListener("click", () => openDialog("about"));
+  const dlgX = $("msDialogX");
+  if (dlgX) dlgX.addEventListener("click", closeDialog);
+  const dlgOk = $("msDialogOk");
+  if (dlgOk) dlgOk.addEventListener("click", closeDialog);
+  if (dlg) {
+    dlg.addEventListener("click", (e) => { if (e.target === dlg) closeDialog(); });
+    dlg.addEventListener("close", () => {
+      if (pausedByDialog && playing) {
+        startTimer();
+        setStatus("进行中…");
+      }
+      pausedByDialog = false;
+    });
+  }
+
+  /* ---------- 按压时笑脸变惊讶 ---------- */
+  gridBox.addEventListener("pointerdown", (e) => {
+    if (!playing) return;
+    const cell = e.target && e.target.closest ? e.target.closest(".ms-cell") : null;
+    if (cell && cell.classList.contains("ms-covered")) setFace("o");
+  });
+  const restoreFace = () => { if (playing) setFace("smile"); };
+  document.addEventListener("pointerup", restoreFace);
+  document.addEventListener("pointercancel", restoreFace);
+  window.addEventListener("blur", restoreFace);
 
   /* ---------- 计时 ---------- */
   function startTimer() {
@@ -266,7 +437,7 @@
   function win() {
     playing = false;
     stopTimer();
-    faceBtn.textContent = "😎";
+    setFace("cool");
     gridBox.classList.add("ms-win");
 
     // 自动为剩余地雷插旗
@@ -281,20 +452,21 @@
     setStatus("🎉 完成！用时 " + fmtTime(seconds));
 
     const key = level;
-    if (!bestTime[key] || seconds < bestTime[key]) {
+    const isRecord = !bestTime[key] || seconds < bestTime[key];
+    if (isRecord) {
       bestTime[key] = seconds;
       try { localStorage.setItem("rsf_ms_best", JSON.stringify(bestTime)); } catch (e) {}
       updateBest();
-      setTimeout(() => alert("🎉 恭喜通关！用时 " + fmtTime(seconds) + "，刷新纪录！"), 100);
-    } else {
-      setTimeout(() => alert("🎉 恭喜通关！用时 " + fmtTime(seconds)), 100);
     }
+    showDialog("扫雷", "<p><b>恭喜通关！</b></p>" +
+      "<p>用时 " + fmtTime(seconds) + (isRecord ? "，刷新纪录！" : "") + "</p>" +
+      "<p class='ms-dialog-note'>点击「确定」返回棋盘。</p>");
   }
 
   function lose(hitR, hitC) {
     playing = false;
     stopTimer();
-    faceBtn.textContent = "😵";
+    setFace("dead");
     gridBox.classList.add("ms-lose");
 
     // 展示所有地雷 + 标出插错的旗子
@@ -331,6 +503,7 @@
     btn.addEventListener("click", () => {
       document.querySelectorAll(".ms-level-btn").forEach((x) => x.classList.remove("active"));
       btn.classList.add("active");
+      closeMenus();
       newGame(btn.dataset.level);
     });
   });
@@ -338,13 +511,18 @@
   /* ---------- 笑脸 = 重开 ---------- */
   faceBtn.addEventListener("click", () => newGame(level));
   const newBtn = $("msNewBtn");
-  if (newBtn) newBtn.addEventListener("click", () => newGame(level));
+  if (newBtn) newBtn.addEventListener("click", () => { closeMenus(); newGame(level); });
 
-  /* ---------- 键盘：R 重开 ---------- */
+  /* ---------- 键盘：R / F2 重开 ---------- */
   document.addEventListener("keydown", (e) => {
     const panel = $("msPanel");
     if (!panel || panel.hidden) return;
-    if (e.key.toLowerCase() === "r") { e.preventDefault(); newGame(level); }
+    if (dlg && dlg.open) return;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.key.toLowerCase() === "r" || e.key === "F2") {
+      e.preventDefault();
+      newGame(level);
+    }
   });
 
   /* ---------- 启动 ---------- */
